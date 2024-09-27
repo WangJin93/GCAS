@@ -198,7 +198,7 @@ output$ga_cor_output <- renderPlot(width = 500,
 )
 output$cor_download <- downloadHandler(
   filename = function() {
-    paste0(colnames(corr_func())[2],"_",colnames(corr_func())[3],".pdf")
+    paste0(colnames(corr_func())[2],"_",colnames(corr_func())[3],"_", input$datasets_text, ".pdf")
   },
   content = function(file) {
     df <- corr_func()%>% na.omit()
@@ -222,7 +222,7 @@ output$cor_download <- downloadHandler(
           dom = "Bfrtip",
           buttons = list(
             list(
-              extend = "csv", text = "Download table", filename = paste(input$ga_id, "correlation results"),
+              extend = "csv", text = "Download table", filename = paste(input$ga_id,"_", input$datasets_text,  "correlation results"),
               exportOptions = list(
                 modifier = list(page = "all")
               )
@@ -245,7 +245,7 @@ output$cor_download <- downloadHandler(
           dom = "Bfrtip",
           buttons = list(
             list(
-              extend = "csv", text = "Download table", filename = paste0(colnames(corr_func())[1],"_",colnames(corr_func())[2]),
+              extend = "csv", text = "Download table", filename = paste0(colnames(corr_func())[2],"_",colnames(corr_func())[3],"_", input$datasets_text ),
               exportOptions = list(
                 modifier = list(page = "all")
               )

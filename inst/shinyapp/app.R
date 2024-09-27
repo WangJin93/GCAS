@@ -34,6 +34,7 @@ if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocMana
 if (!require("aplot")) BiocManager::install("aplot", update = FALSE, ask = FALSE); library(aplot)
 if (!require("ggtree")) BiocManager::install("ggtree", update = FALSE, ask = FALSE); library(ggtree)
 if (!require("enrichplot")) BiocManager::install("enrichplot", update = FALSE, ask = FALSE); library(enrichplot)
+if (!require("clusterProfiler")) BiocManager::install("clusterProfiler", update = FALSE, ask = FALSE); library(enrichplot)
 
 source("apps/visualize.R")
 source("apps/Dashboard.R")

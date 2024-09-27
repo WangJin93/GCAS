@@ -3,7 +3,7 @@
 #' This function performs RRA analysis on differentially expressed genes (DEGs) lists
 #' obtained from various studies. It ranks genes based on their differential expression
 #' and aggregates the ranks to identify consistently regulated genes across studies.
-#' @import RobustRankAggreg ComplexHeatmap
+#' @import RobustRankAggreg
 #' @param DEGs_lists A list of DEGs data frames. Each data frame should contain at least a 'gene' column and a 'logFC' column.
 #' @param top.num Numeric, the number of top genes to select based on their ranks. Default is 0, which selects all genes passing the thresholds.
 #' @param rra.p Numeric, the p-value threshold for RRA. Default is 0.05.

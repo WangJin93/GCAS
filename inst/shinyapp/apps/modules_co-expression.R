@@ -77,9 +77,8 @@ fluidRow(column(3,
                       icon = icon("search"),
                       block = TRUE,
                       size = "sm"
-                    ),
-                    tags$hr(style = "border:none; border-top:2px solid #5E81AC;")
-                  )
+                    )
+                    )
       ),
       column(9,
              tabBox(
@@ -261,8 +260,7 @@ server.modules_co_expression <- function(input, output, session) {
         corr_results(),
         rownames = FALSE,
         options = list(
-          pageLength = 5,
-          dom = "Bfrtip"
+          pageLength = 5
         )
       )
 

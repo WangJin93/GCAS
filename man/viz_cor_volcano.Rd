@@ -36,6 +36,6 @@ dataset <- c("GSE27262","GSE7670","GSE19188","GSE19804","GSE30219","GSE31210","G
 df <- get_expr_data(genes = "TNS1",datasets = dataset)
 geneset_data <- get_expr_data(genes = genelist ,datasets = dataset)
 cor_result <- cor_gcas_genelist(df, geneset_data, sample_type = c("Tumor"))
-viz_cor_volcano(cor_result, "LAG3", r.cut = 0.2,colors = c("blue" ,"grey20", "red"))
+viz_cor_volcano(cor_result, "LILRB4", p.cut = 0.5, r.cut = 0.1,colors = c("blue" ,"grey20", "red"))
 }
 }

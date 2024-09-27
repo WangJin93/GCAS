@@ -390,7 +390,7 @@ server.modules_gcas_corr <- function(input, output, session) {
 
   output$download <- downloadHandler(
     filename = function() {
-      paste0(input$Pancan_search, "_genelist_cor.pdf")
+      paste0(input$Pancan_search,"_",input$Type,"_cor",".pdf")
     },
     content = function(file) {
         pdf(file,  width =  input$width_scatter/70 ,height = input$height_scatter/70)

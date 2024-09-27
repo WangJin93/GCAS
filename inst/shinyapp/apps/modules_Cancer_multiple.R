@@ -32,25 +32,24 @@ fluidRow(column(3,
           color = "primary",
           block = TRUE,
           size = "sm"
-        )),
-        wellPanel(
-          numericInput(inputId = ns("height_scatter"), label = "Height", value = 500,max = 600),
-          numericInput(inputId = ns("width_scatter"), label = "Width", value = 800),
-        downloadBttn(
-          outputId = ns("download"),
-          style = "gradient",
-          color = "default",
-          block = TRUE,
-          size = "sm"
         ))
       ),
       column(9,
              shinycssloaders::withSpinner(plotOutput(ns("gene_pancan_dist"), height = "auto")),
+             fluidRow(
+               column(2, numericInput(inputId = ns("height_scatter"), label = "Height", value = 500, max = 600)),
+               column(2, numericInput(inputId = ns("width_scatter"), label = "Width", value = 800)),
+               column(4,
+                      br(),
+                      downloadBttn(
+                        outputId = ns("download"),
+                        style = "gradient",
+                        color = "default",
+                        block = TRUE,
+                        size = "md"
+                      ))
+             ),
              hr(),
-             # h5("NOTEs:"),
-             # p("1. The data query may take some time based on your network. Wait until a plot shows"),
-             # p("2. You have to turn on both 'Show P value' and 'Show P label' to show significant labels"),
-             tags$br(),
              DT::DTOutput(outputId = ns("tbl")),
         #      shinyjs::hidden(
         #        wellPanel(
@@ -122,7 +121,7 @@ server.modules_multi_gene <- function(input, output, session, shared_values) {
 
   output$downloadTable <- downloadHandler(
     filename = function() {
-      paste0(input$ga_ids, "_", input$profile, "_pancan_CPTAC.csv")
+      paste0(input$ga_ids, "_", input$datasets_text, ".csv")
     },
     content = function(file) {
       write.csv(plot_func()$data, file, row.names = FALSE)
@@ -131,7 +130,7 @@ server.modules_multi_gene <- function(input, output, session, shared_values) {
 
   output$download <- downloadHandler(
     filename = function() {
-      paste0(input$ga_ids,  "_pancan_CPTAC.pdf")
+      paste0(input$ga_ids, "_", input$datasets_text, ".pdf")
     },
     content = function(file) {
       p <- plot_func()
@@ -160,7 +159,7 @@ server.modules_multi_gene <- function(input, output, session, shared_values) {
         dom = "Bfrtip",
         buttons = list(
           list(
-            extend = "csv", text = "Download table", filename =  paste0(input$ga_ids,  "_pancan_CPTAC"),
+            extend = "csv", text = "Download table", filename =  paste0(input$ga_ids,"_", input$datasets_text),
             exportOptions = list(
               modifier = list(page = "all")
             )

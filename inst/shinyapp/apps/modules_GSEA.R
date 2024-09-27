@@ -4,7 +4,7 @@ ui.modules_GSEA <- function(id) {
 fluidRow(column(3,
                 wellPanel(
                   tabPanel("Upload",value = "upload",
-                           h4(".csv/.txt file (tab or comma delimited)")
+                           h4(".txt file (tab or comma delimited)")
                            ,
                            HTML("<hr> <a href='volcano.csv'> <i class='fa fa-download'> </i> Download example data</a>  "),
                            br(),
@@ -17,7 +17,7 @@ fluidRow(column(3,
                              status = "info"
                            ),
 
-                           fileInput(ns('datafile'), "Choose text/csv File (co-expression/DEG result)",
+                           fileInput(ns('datafile'), "Choose csv File (co-expression/DEG result)",
                                      accept=c('.csv'),multiple = FALSE),
 
                   ),
@@ -31,7 +31,7 @@ fluidRow(column(3,
                   ),
                   conditionalPanel(ns=ns,
                                    condition = "input.gmt == 'Upload'",
-                                   fileInput('gmtfile', "Choose .GMT File",
+                                   fileInput(ns('gmtfile'), "Choose .GMT File",
                                              accept=c(".gmt"),multiple = FALSE)
                   ),
                   selectInput(
@@ -140,8 +140,10 @@ server.modules_GSEA <- function(input, output, session) {
       }
       else{
         file_extension =  unlist(strsplit(inFile$datapath, '[.]'))[length(unlist(strsplit(inFile$datapath, '[.]')))]
+        print(file_extension)
         if(file_extension %in% c("gmt","GMT")){
           gmt <- read.gmt(inFile$datapath)
+          print(gmt)
           return(gmt)
         } else {
           print(paste("wrong file format", file_extension))

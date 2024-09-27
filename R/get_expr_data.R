@@ -1,5 +1,6 @@
 #' @title Retrieve Gene Expression Data
 #' @description Retrieve expression data for specified genes from given datasets.
+#' @import plyr tibble digest
 #' @param datasets A character vector of dataset identifiers.
 #' @param genes A character vector of gene identifiers.
 #' @return A dataframe containing expression data for the specified genes from the given datasets.

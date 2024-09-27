@@ -61,21 +61,20 @@ fluidRow(column(3,
           )
       ),
       column(9,
-             tabsetPanel(type = "tabs",id=ns("tcga_single"),
+             bs4Dash::tabsetPanel(type = "tabs",id=ns("tcga_single"),
                          tabPanel("Box plot",value = "Results",
                                   shinycssloaders::withSpinner(plotOutput(ns("gene_pancan_dist"), height = "auto")),
-                                  br(),
                                   fluidRow(
                                     column(2, numericInput(inputId = ns("height_scatter"), label = "Height", value = 500, max = 600)),
                                     column(2, numericInput(inputId = ns("width_scatter"), label = "Width", value = 800)),
-                                    column(2,
+                                    column(3,
                                            br(),
                                            downloadBttn(
                                              outputId = ns("download"),
                                              style = "gradient",
                                              color = "default",
                                              block = TRUE,
-                                             size = "sm"
+                                             size = "md"
                                            ))
                                   ),
                                   hr(),
@@ -270,7 +269,7 @@ server.modules_multidata_dist <- function(input, output, session) {
 
   output$download <- downloadHandler(
     filename = function() {
-      paste0(input$Pancan_search,  "_GCAS.pdf")
+      paste0(input$Pancan_search,  "_",input$Type,".pdf")
     },
     content = function(file) {
       p<- plot_func() + ggplot2::theme(

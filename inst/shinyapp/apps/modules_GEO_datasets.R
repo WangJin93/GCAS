@@ -15,7 +15,23 @@ ui.modules_GEO_datasets <- function(id) {
       ),
       mainPanel(
         width = 9,
-        DT::dataTableOutput(ns("geo_table")),
+        bs4Dash::tabsetPanel(type = "tabs",id=ns("tcga_single"),
+                    tabPanel("Dataset info",value = "info",
+                             DT::dataTableOutput(ns("geo_table"))
+                    ),
+                    tabPanel("Abbreviate",value = "abbre",
+                             selectInput(
+                               inputId = ns("Type"),
+                               label = "Cancer type:",
+                               choices = unique(dataset_info %>%  .["type"]),
+                               selected = "Lung cancer",
+                               multiple = F
+                             ),
+
+                             DT::dataTableOutput(ns("abbreviate"))
+
+                    )
+        )
 
       )
     )
@@ -122,6 +138,14 @@ server.modules_GEO_datasets <- function(input, output, session, shared_values) {
   })
   observe({
     shared_values$datasets_select <- input$datasets_text
+
+  })
+  output$abbreviate <- DT::renderDataTable({
+    abbr_full %>%
+      dplyr::filter(Type ==  input$Type) %>%
+      DT::datatable(
+        rownames = FALSE,selection = 'single'
+      )
 
   })
 

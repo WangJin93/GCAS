@@ -308,7 +308,7 @@ server.modules_gcas_til <- function(input, output, session) {
           dom = "Bfrtip",
           buttons = list(
             list(
-              extend = "csv", text = "Download table", filename =  paste0(input$Pancan_search,  "_pancan_TIL"),
+              extend = "csv", text = "Download table", filename =  paste0(input$Pancan_search,"_",input$Type,"_cor_TIL"),
               exportOptions = list(
                 modifier = list(page = "all")
               )
@@ -332,7 +332,7 @@ server.modules_gcas_til <- function(input, output, session) {
 
   output$download <- downloadHandler(
     filename = function() {
-      paste0(input$Pancan_search, "_pancan_TIL_cor.pdf")
+      paste0(input$Pancan_search,"_",input$Type,"TIL_cor.pdf")
     },
     content = function(file) {
         pdf(file,  width =  input$width_scatter/70 ,height = input$height_scatter/70)

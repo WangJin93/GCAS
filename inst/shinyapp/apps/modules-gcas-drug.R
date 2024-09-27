@@ -68,7 +68,7 @@ ui.modules_gcas_drug <- function(id) {
        )
       ),
       column(9,
-             tabsetPanel(type = "tabs",id=ns("tcga_single"),
+             bs4Dash::tabsetPanel(type = "tabs",id=ns("tcga_single"),
                          tabPanel("Results",value = "Results",
                                   shinycssloaders::withSpinner(plotOutput(ns("hm_gene_immune_cor"), height = "auto")),
                                   hr(),
@@ -344,7 +344,7 @@ server.modules_gcas_drug <- function(input, output, session) {
 
   output$download <- downloadHandler(
     filename = function() {
-      paste0(input$Pancan_search, "_pancan_drug_cor.pdf")
+      paste0(input$Pancan_search,"_",input$Type,"_drug.pdf")
     },
     content = function(file) {
         pdf(file,  width =  input$width_scatter/70 ,height = input$height_scatter/70)

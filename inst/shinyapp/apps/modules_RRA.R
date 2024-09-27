@@ -50,7 +50,7 @@ ui.modules_RRA <- function(id) {
              )
       ),
       column(9,align="center",
-             tabsetPanel(id = ns("tablist"),
+             bs4Dash::tabsetPanel(id = ns("tablist"),
                          tabPanel('RRA results',
                                   shinycssloaders::withSpinner(dataTableOutput(ns("plotdata")))
                          ),
@@ -60,14 +60,14 @@ ui.modules_RRA <- function(id) {
                                     column(2),
                                     column(2, numericInput(inputId = ns("height_scatter"), label = "Height", value = 500, max = 600)),
                                     column(2, numericInput(inputId = ns("width_scatter"), label = "Width", value = 800)),
-                                    column(2,
+                                    column(3,
                                            br(),
                                            downloadBttn(
                                              outputId = ns("download"),label = "Download Figure",
                                              style = "gradient",
                                              color = "default",
                                              block = TRUE,
-                                             size = "sm"
+                                             size = "md"
                                            ))
                                   )
 

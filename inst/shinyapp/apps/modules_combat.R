@@ -29,7 +29,7 @@ ui.modules_combat <- function(id) {
                       ))
     ),
     column(9,
-           tabsetPanel(type = "tabs",id=ns("tcga_single"),
+           bs4Dash::tabsetPanel(type = "tabs",id=ns("tcga_single"),
                        tabPanel("ComBat result",value = "Results",
                                 shinycssloaders::withSpinner(DT::DTOutput(outputId = ns("tbl"))),
                                 downloadBttn(ns("downloadData"), "Download combat dataset",
@@ -48,7 +48,7 @@ ui.modules_combat <- function(id) {
                                            block = TRUE
                                          )
                                   ),
-                                  column(3,
+                                  column(6,
                                          downloadBttn(
                                            outputId = ns("download_DEG"),  # 使用inputId而不是outputId
                                            label = "Download results",
@@ -96,7 +96,7 @@ ui.modules_combat <- function(id) {
                                          fluidRow(
                                            column(3, numericInput(inputId = ns("height_scatter"), label = "Height", value = 500, max = 600)),
                                            column(3, numericInput(inputId = ns("width_scatter"), label = "Width", value = 800)),
-                                           column(3,
+                                           column(4,
                                                   br(),
                                                   downloadBttn(
                                                     outputId = ns("download"),
@@ -161,8 +161,7 @@ server.modules_combat <- function(input, output, session) {
         combat_results()$combined_data,
         rownames = T,
         options = list(
-          pageLength = 10,
-          dom = "Bfrtip"
+          pageLength = 10
         )
       )
 

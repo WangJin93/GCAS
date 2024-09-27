@@ -51,25 +51,25 @@ ui.modules_Cancer_expression <- function(id) {
                   block = TRUE,
                   size = "sm"
                 )),
-              tags$br(),
-              wellPanel(
-                p("Download figure:"),
-                numericInput(inputId = ns("height_scatter"), label = "Height", value = 600),
-                numericInput(inputId = ns("width_scatter"), label = "Width", value = 600),
-                hr(),
-                downloadBttn(
-                  outputId = ns("download"),
-                  style = "gradient",
-                  color = "default",
-                  block = TRUE,
-                  size = "sm"
-                )
-              )
             ),
             column(
               8,
               shinycssloaders::withSpinner(plotOutput(ns("ga_expr_output"),width = "100%",height = "auto")),
-
+              br(),
+              fluidRow(
+                column(2, numericInput(inputId = ns("height_scatter"), label = "Height", value = 400, max = 600)),
+                column(2, numericInput(inputId = ns("width_scatter"), label = "Width", value = 400)),
+                column(4,
+                       br(),
+                       downloadBttn(
+                         outputId = ns("download"),
+                         style = "gradient",
+                         color = "default",
+                         block = TRUE,
+                         size = "md"
+                       ))
+              ),
+              hr(),
               DT::dataTableOutput(ns("ga_expr_data"))
             )
 
@@ -150,7 +150,7 @@ server.modules_Cancer_expression <- function(input, output, session, shared_valu
                                       height = height_scatter,{
                                         w$show() # Waiter add-ins
                                           plot_func()+
-                                            ylab(ifelse(stringr::str_detect(input$datasets_text,"Phospho"),input$phoso_site,input$ga_id))
+                                            ylab(input$ga_id)
                                         }
 
 
@@ -162,7 +162,7 @@ server.modules_Cancer_expression <- function(input, output, session, shared_valu
     content = function(file) {
         pdf(file = file, onefile = FALSE, width = input$width_scatter/70 ,height = input$height_scatter/70)
         print(plot_func()+
-                ylab(ifelse(stringr::str_detect(input$datasets_text,"Phospho"),input$phoso_site,input$ga_id))
+                ylab(input$ga_id)
         )
         dev.off()
 

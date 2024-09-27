@@ -2,7 +2,7 @@ ui.modules_venn <- function(id) {
   ns <- NS(id)
   fluidPage(
     fluidRow(
-      column(3,
+      column(4,
              tabBox(
                id = ns("venntab"), height = "100%", width = 12,  collapsible = F,
 
@@ -60,12 +60,16 @@ ui.modules_venn <- function(id) {
 
              )
       ),
-      column(9,align="center",
-             tabsetPanel(id = ns("tablist"),
+      column(8,align="center",
+             bs4Dash::tabsetPanel(id = ns("tablist"),
                          tabPanel('Up',
                                   shinycssloaders::withSpinner(plotOutput(ns("venn_diagram"), height = "600px", width = "600px")),
                                   shinyjs::hidden(
-                                    downloadButton(ns("download_up"), "Download Figure", class = "mybutton")
+                                    downloadBttn(ns("download_up"), "Download Figure",
+                                                 style = "gradient",
+                                                 color = "default",
+                                                 block = TRUE,
+                                                 size = "md")
                                   ),
                                   HTML("<hr>"),
 
@@ -74,13 +78,14 @@ ui.modules_venn <- function(id) {
                          tabPanel('Down',
                                   shinycssloaders::withSpinner(plotOutput(ns("venn_diagram2"), height = "600px", width = "600px")),
                                   shinyjs::hidden(
-                                    downloadButton(ns("download_down"), "Download Figure", class = "mybutton")
+                                    downloadBttn(ns("download_down"), "Download Figure",
+                                                   style = "gradient",
+                                                   color = "default",
+                                                   block = TRUE,
+                                                   size = "md")
                                   ),
                                   HTML("<hr>"),
                                   shinycssloaders::withSpinner(dataTableOutput(outputId = ns("venn_list2"))),
-                                  shinyjs::hidden(
-                                    downloadButton(ns("download_venn_down.csv"), "Download csv table", class = "mybutton")
-                                  )
                          )
              ),
 

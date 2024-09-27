@@ -32,3 +32,18 @@ NULL
 #' @docType data
 #' data("drug_info.rda")
 NULL
+
+#'
+#' @docType data
+#' data("KEGG_GMT_7.5.1.rda")
+NULL
+
+#'
+#' @docType data
+#' data("BP_GMT_7.5.1.rda")
+NULL
+
+#'
+#' @docType data
+#' data("abbr_full.rda")
+NULL
