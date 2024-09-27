@@ -25,7 +25,8 @@ if (!require("ggrepel")) install.packages("ggrepel", update = FALSE, ask = FALSE
 if (!require("tibble")) install.packages("tibble", update = FALSE, ask = FALSE); library(tibble)
 if (!require("tidyr")) install.packages("tidyr", update = FALSE, ask = FALSE); library(tidyr)
 if (!require("limma")) install.packages("limma", update = FALSE, ask = FALSE); library(tidyr)
-if(!require("VennDiagram")) install.packages("VennDiagram",update = F,ask = F)
+if (!require("VennDiagram")) install.packages("VennDiagram",update = F,ask = F)
+if (!require("RobustRankAggreg")) install.packages("RobustRankAggreg",update = F,ask = F)
 library(shinyTree)
 library(htmlwidgets)
 # 安装并加载Bioconductor包
