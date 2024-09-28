@@ -2,14 +2,34 @@ Package: GCAS
 Type: Package
 Title: GEO Cancer Analysis Suite (GCAS)
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Author: Jin Wang
+Maintainer: Jin Wang <jin.wang93@outlook.com>
+Description: GEO Cancer Analysis Suite (GCAS), an R package and visualization interface via shinyApp (link:). GCAS includes four main modules: differential gene expression analysis, correlation studies, pan-cancer analysis, and immune infiltration and drug sensitivity analysis. These modules facilitate the identification of potential cancer biomarkers, elucidation of gene regulatory networks, comprehensive multi-cancer analysis, and assessment of gene expression in relation to immune cell infiltration and drug sensitivity.
+License: MIT
 Encoding: UTF-8
 Imports:
-    Rcpp
+    Rcpp,
+    RobustRankAggreg,
+    VennDiagram,
+    digest,
+    dplyr,
+    ggplot2,
+    ggpubr,
+    ggrepel,
+    ggtree,
+    httr,
+    jsonlite,
+    meta,
+    plyr,
+    psych,
+    reshape2,
+    shiny,
+    stringr,
+    sva,
+    tibble,
+    RColorBrewer,
+    clusterProfiler,
+    grid
 LinkingTo:
     Rcpp
 LazyData: true
