@@ -124,16 +124,6 @@ ui <- bs4Dash::dashboardPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
   # 创建一个全局的 reactiveValues 对象来存储共享变量
-  observeEvent(input$sidebarItemExpanded, {
-    if (input$sidebarItemExpanded == "DEG&GSEAAnalysis") {
-      shinyalert::shinyalert(
-        title = "Access Restricted",
-        html = TRUE,  # 允许 HTML 内容
-        text = HTML("<div style='font-size: 18px;'>This module (DEG/co-expression/GSEA analysis) is restricted due to the limitations of the shinyapps.io free version. Please install the <a href='https://github.com/WangJin93/GCAS' target='_blank'>GCAS</a> R package to experience the full version.</div>"),
-        type = "warning"
-      )
-    }
-  })
   shared_values <- reactiveValues(
     type_select = NULL,
     subtypes = NULL,
