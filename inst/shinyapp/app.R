@@ -6,11 +6,13 @@
 #
 #    http://shiny.rstudio.com/
 #
+
 library(GCAS)
 # 安装并加载CRAN包
 if (!require("shiny")) install.packages("shiny", update = FALSE, ask = FALSE); library(shiny)
 if (!require("waiter")) install.packages("waiter", update = FALSE, ask = FALSE); library(waiter)
 if (!require("ggplot2")) install.packages("ggplot2", update = FALSE, ask = FALSE); library(ggplot2)
+if (!require("VennDiagram")) install.packages("VennDiagram", update = FALSE, ask = FALSE); library(VennDiagram)
 if (!require("ggpubr")) install.packages("ggpubr", update = FALSE, ask = FALSE); library(ggpubr)
 if (!require("dplyr")) install.packages("dplyr", update = FALSE, ask = FALSE); library(dplyr)
 if (!require("DT")) install.packages("DT", update = FALSE, ask = FALSE); library(DT)
@@ -29,6 +31,7 @@ if (!require("VennDiagram")) install.packages("VennDiagram",update = F,ask = F);
 if (!require("RobustRankAggreg")) install.packages("RobustRankAggreg",update = F,ask = F); library(RobustRankAggreg)
 if (!require("shinyTree")) devtools::install_github("shinyTree/shinyTree"); library(shinyTree)
 if (!require("htmlwidgets")) install.packages("htmlwidgets",update = F,ask = F); library(htmlwidgets)
+
 # 安装并加载Bioconductor包
 if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager", update = FALSE, ask = FALSE)
 
@@ -121,6 +124,16 @@ ui <- bs4Dash::dashboardPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
   # 创建一个全局的 reactiveValues 对象来存储共享变量
+  observeEvent(input$sidebarItemExpanded, {
+    if (input$sidebarItemExpanded == "DEG&GSEAAnalysis") {
+      shinyalert::shinyalert(
+        title = "Access Restricted",
+        html = TRUE,  # 允许 HTML 内容
+        text = HTML("<div style='font-size: 18px;'>This module (DEG/co-expression/GSEA analysis) is restricted due to the limitations of the shinyapps.io free version. Please install the <a href='https://github.com/WangJin93/GCAS' target='_blank'>GCAS</a> R package to experience the full version.</div>"),
+        type = "warning"
+      )
+    }
+  })
   shared_values <- reactiveValues(
     type_select = NULL,
     subtypes = NULL,
