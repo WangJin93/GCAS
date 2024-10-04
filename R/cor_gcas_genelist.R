@@ -1,5 +1,5 @@
 #' @title Perform correlation analysis
-#' @description Perform correlation analysis of the expression data in CPTAC database.
+#' @description Perform correlation analysis of the expression data in multiple datasets.
 #' @import dplyr psych
 #' @param df The expression data of the target gene in multiple datasets, obtained by the get_expr_data() function.
 #' @param geneset_data The expression data of a genelist in multiple datasets, obtained by the get_expr_data() function.
