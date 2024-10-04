@@ -24,7 +24,7 @@ cor_gcas_genelist(
 \item{cor_method}{Method for correlation analysis, default "pearson".}
 }
 \description{
-Perform correlation analysis of the expression data in CPTAC database.
+Perform correlation analysis of the expression data in multiple datasets.
 }
 \examples{
 \dontrun{
