@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 \name{drug_info}
 \alias{drug_info}
 \docType{data}
@@ -26,3 +27,33 @@ Genomics of Drug Sensitivity in Cancer (https://www.cancerrxgene.org/)
 data(drug_info)
 str(drug_info)
 }
+=======
+\name{drug_info}
+\alias{drug_info}
+\docType{data}
+\title{
+Drug informations
+}
+\description{
+Anti-tumor drugs informations obtained from GDSC2.0 datasets.
+}
+\usage{data("drug_info")}
+\format{
+  A data frame with 198 observations on the following 6 variables.
+  \describe{
+    \item{\code{ID}}{a character vector}
+    \item{\code{Name}}{a character vector}
+    \item{\code{Synonyms}}{a character vector}
+    \item{\code{Targets}}{a character vector}
+    \item{\code{Target.pathway}}{a character vector}
+    \item{\code{PubCHEM}}{a character vector}
+  }
+}
+\source{
+Genomics of Drug Sensitivity in Cancer (https://www.cancerrxgene.org/)
+}
+\examples{
+data(drug_info)
+str(drug_info)
+}
+>>>>>>> 6f4eea48388fdad44a0cc783c245e2ab56dbb4df

@@ -4,7 +4,7 @@
 \alias{get_OSF_data}
 \title{Get GEO expression dataset and sample information in OSF repository}
 \usage{
-get_OSF_data(table = "GSE19188", action = "geo_data")
+get_OSF_data(table = "GSE19188", action = "geo_data", retries = 2)
 }
 \arguments{
 \item{table}{A character string specifying the GEO dataset identifier (e.g., "GSE19188").}

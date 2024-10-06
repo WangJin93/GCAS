@@ -34,7 +34,7 @@ viz_TvsN(
 \item{Show.n.location}{Y-axis position displayed for sample size.}
 }
 \description{
-Visualizing the different expression of mRNA/protein expression data between Tumor and Normal tissues in CPTAC database.
+Visualizing the different expression of mRNA expression data between Tumor and Normal tissues in GEO database.
 }
 \examples{
 \dontrun{
