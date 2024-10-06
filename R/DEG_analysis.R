@@ -1,5 +1,6 @@
 #' @title Differential Expression Gene (DEG) Analysis
 #' @description Perform differential expression gene analysis on a given dataset.
+#' @import dplyr limma
 #' @param df A dataframe containing gene expression data with sample IDs as columns.
 #' @param tumor_subtype A character vector specifying the tumor subtypes to be analyzed. Default is NULL, which means all tumor subtypes will be included.
 #' @param ... Additional arguments passed to `lmFit`, `contrasts.fit`, and `eBayes`.

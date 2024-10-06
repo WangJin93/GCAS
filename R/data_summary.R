@@ -25,7 +25,7 @@ data_summary <- function(df, tumor_subtype = NULL, method = "t.test") {
     df$type <- ifelse(df$subtype %in% c("Normal", "Adjacent"), "Normal", "Tumor")
   } else {
     tumor_subtype <- extract_subset(subtype,tumor_subtype)
-    df <- df %>% filter(subtype %in% c(tumor_subtype, "Normal", "Adjacent"))
+    df <- df %>% dplyr::filter(subtype %in% c(tumor_subtype, "Normal", "Adjacent"))
     df$type <- ifelse(df$subtype %in% tumor_subtype, "Tumor", "Normal")
   }
 
@@ -34,39 +34,39 @@ data_summary <- function(df, tumor_subtype = NULL, method = "t.test") {
 
   # Compute mean, standard deviation, and sample size for each dataset and type
   summary_data <- df %>%
-    group_by(dataset, type) %>%
-    summarise(
+    dplyr::group_by(dataset, type) %>%
+    dplyr::summarise(
       mean_value = mean(value),
       sd_value = sd(value),
-      n = n(),
+      n =  dplyr::n(),
       .groups = "drop"
     )
 
   # Extract data for Normal and Tumor types
   normal_data <- summary_data %>%
-    filter(type == "Normal") %>%
+    dplyr::filter(type == "Normal") %>%
     dplyr::rename(mean_Normal = mean_value, sd_Normal = sd_value, n_Normal = n) %>%
     dplyr::select(-type) %>%
-    mutate(se_Normal = sd_Normal / sqrt(n_Normal))
+    dplyr::mutate(se_Normal = sd_Normal / sqrt(n_Normal))
 
   tumor_data <- summary_data %>%
-    filter(type == "Tumor") %>%
+    dplyr::filter(type == "Tumor") %>%
     dplyr::rename(mean_Tumor = mean_value, sd_Tumor = sd_value, n_Tumor = n) %>%
     dplyr::select(-type) %>%
-    mutate(se_Tumor = sd_Tumor / sqrt(n_Tumor))
+    dplyr::mutate(se_Tumor = sd_Tumor / sqrt(n_Tumor))
 
   # Merge Normal and Tumor data
   results <- normal_data %>%
-    left_join(tumor_data, by = "dataset") %>%
-    mutate(
+    dplyr::left_join(tumor_data, by = "dataset") %>%
+    dplyr::mutate(
       SE = sqrt(se_Normal^2 + se_Tumor^2),
       logFC = mean_Tumor - mean_Normal
     )
 
   # Compute p-values for each dataset
   p_values <- df %>%
-    group_by(dataset) %>%
-    summarise(
+    dplyr::group_by(dataset) %>%
+    dplyr::summarise(
       p.value = if (sum(type == "Normal") > 0 & sum(type == "Tumor") > 0 & length(unique(type)) == 2) {
         if (method == "t.test") {
           tryCatch({
@@ -87,8 +87,8 @@ data_summary <- function(df, tumor_subtype = NULL, method = "t.test") {
 
   # Merge p-values with results
   results <- results %>%
-    left_join(p_values, by = "dataset") %>%
-    mutate(gene = gene)
+    dplyr::left_join(p_values, by = "dataset") %>%
+    dplyr::mutate(gene = gene)
 
   return(results)
 }

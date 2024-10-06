@@ -1,6 +1,6 @@
 #' @title Visualization of correlation results
 #' @description Presenting correlation analysis results using heat maps based on ggplot2.
-#' @import dplyr psych ggplot2 reshape2 stringr ggtree
+#' @import dplyr psych ggplot2 reshape2 stringr ggtree aplot
 #' @param r The correlation coefficient matrix r of the correlation analysis results obtained from the functions cor_pancancer_genelist(), cor_pancancer_TIL(), and cor_pancancer_drug().
 #' @param p The P-value matrix p of the correlation analysis results obtained from the functions cor_pancancer_genelist(), cor_pancancer_TIL(), and cor_pancancer_drug().
 #' @examples
@@ -65,7 +65,7 @@ viz_cor_heatmap <- function(r, p) {
   # Add hierarchical clustering dendrogram if there are multiple rows
   if (nrow(r) > 1) {
     h <- ggtree(gg, layout = "rectangular", branch.length = "none")
-    heat <- heat %>% insert_left(h, width = 0.1)
+    heat <- heat %>% aplot::insert_left(h, width = 0.1)
   }
 
   return(heat)
