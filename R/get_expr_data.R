@@ -71,6 +71,7 @@ get_expr_data <- function(datasets, genes) {
     if (length(genes) == 1) {
       expr_data[, 2] <- as.numeric(expr_data[, 2])
     } else {
+      expr_data <- expr_data[, c(setdiff(names(expr_data), "dataset"), "dataset")]
       expr_data[,2:(ncol(expr_data)-1)] <- apply(expr_data[,2:(ncol(expr_data)-1)], 2, as.numeric)
     }
 
