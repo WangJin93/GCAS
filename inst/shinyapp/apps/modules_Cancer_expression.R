@@ -39,8 +39,8 @@ ui.modules_Cancer_expression <- function(id) {
                 materialSwitch(ns("pdist_show_p_value"), "Show P value", inline = FALSE),
                 materialSwitch(ns("pdist_show_p_label"), "Show P label", inline = FALSE),
                 materialSwitch(ns("show_n"), "Show sample size", inline = FALSE),
-                colourpicker::colourInput(inputId = ns("tumor_col"), "Tumor sample color", "#00AFBB"),
-                colourpicker::colourInput(inputId = ns("normal_col"), "Normal sample color", "#FC4E07"),
+                colourpicker::colourInput(inputId = ns("normal_col"), "Normal sample color", "#00AFBB"),
+                colourpicker::colourInput(inputId = ns("tumor_col"), "Tumor sample color", "#FC4E07"),
 
                 actionBttn(
                   inputId = ns("ga_submit"),
@@ -113,8 +113,9 @@ server.modules_Cancer_expression <- function(input, output, session, shared_valu
 
 
   colors <- reactive({
-    c(input$tumor_col, input$normal_col)
+    c( input$normal_col,input$tumor_col)
   })
+
 
 
   # Show waiter for plot
