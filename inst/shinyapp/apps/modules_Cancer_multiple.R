@@ -21,8 +21,8 @@ fluidRow(column(3,
         materialSwitch(ns("Show.P.label"), "Show P label", inline = TRUE),
         materialSwitch(ns("Show.n"), "Show sample size", inline = T),
         materialSwitch(ns("x_axis45"), "X-axis 45°", inline = T),
-        colourpicker::colourInput(inputId = ns("tumor_col"), "Tumor sample color", "#00AFBB"),
-        colourpicker::colourInput(inputId = ns("normal_col"), "Normal sample color", "#FC4E07"),
+        colourpicker::colourInput(inputId = ns("normal_col"), "Normal sample color", "#00AFBB"),
+        colourpicker::colourInput(inputId = ns("tumor_col"), "Tumor sample color", "#FC4E07"),
         tags$hr(style = "border:none; border-top:2px solid #5E81AC;"),
         shinyWidgets::actionBttn(
           inputId = ns("search_bttn"),
@@ -80,7 +80,7 @@ server.modules_multi_gene <- function(input, output, session, shared_values) {
   })
 
   colors <- reactive({
-    c(input$tumor_col, input$normal_col)
+    c( input$normal_col,input$tumor_col)
   })
 
 
