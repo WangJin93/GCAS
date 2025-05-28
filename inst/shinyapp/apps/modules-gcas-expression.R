@@ -194,7 +194,7 @@ server.modules_multidata_dist <- function(input, output, session) {
   colors <- reactive({
     c( input$normal_col,input$tumor_col)
   })
-
+  
 
   # Show waiter for plot
   w <- waiter::Waiter$new(id = ns("gene_pancan_dist"), html = waiter::spin_hexdots(), color = "black")
@@ -320,5 +320,15 @@ server.modules_multidata_dist <- function(input, output, session) {
                                        plot_meta_forest(data_sum())
                                      }
                                    })
-
+  output$download_forest <- downloadHandler(
+    filename = function() {
+      paste0(input$Pancan_search,"_",input$Type,".pdf")
+    },
+    content = function(file) {
+      pdf(file,  width =  input$width_scatter/70 ,height = input$height_scatter/70)
+      plot_meta_forest(data_sum())
+      dev.off()
+    }
+  )
+  
 }
