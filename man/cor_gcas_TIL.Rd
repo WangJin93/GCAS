@@ -4,7 +4,13 @@
 \alias{cor_gcas_TIL}
 \title{Correlation analysis of immune cells infiltration}
 \usage{
-cor_gcas_TIL(df, cor_method = "spearman", TIL_type = "TIMER")
+cor_gcas_TIL(
+  df,
+  cor_method = "spearman",
+  TIL_type = "TIMER",
+  adjust_method = "BH",
+  conf_level = 0.95
+)
 }
 \arguments{
 \item{df}{The expression data of the target gene in multiple datasets, obtained by the get_expr_data() function.}
@@ -12,6 +18,13 @@ cor_gcas_TIL(df, cor_method = "spearman", TIL_type = "TIMER")
 \item{cor_method}{Method for correlation analysis, default "spearman".}
 
 \item{TIL_type}{Algorithm for calculating immune cell infiltration, default "TIMER".}
+
+\item{adjust_method}{Method for adjusting p-values for multiple testing. Options include "none", "BH", "BY", "holm", "hochberg", "hommel", "bonferroni". Default is "BH".}
+
+\item{conf_level}{The confidence level for confidence interval calculation (default: 0.95).}
+}
+\value{
+A list containing the correlation results (including n, r, t, p, p.adj, ci_lower, ci_upper) and the merged data.
 }
 \description{
 Calculate the correlation between target gene expression and immune cells infiltration in multiple datasets.

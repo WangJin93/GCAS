@@ -22,6 +22,48 @@
 #' }
 #' @export
 RRA_analysis <- function(DEGs_lists, top.num = 0, rra.p = 0.05, logFC_cut = 1, p_cut = 0.05) {
+  
+  # Input validation
+  if (is.null(DEGs_lists)) {
+    warning("DEGs_lists is NULL")
+    return(NULL)
+  }
+  
+  if (!is.list(DEGs_lists)) {
+    stop("DEGs_lists must be a list")
+  }
+  
+  if (length(DEGs_lists) < 2) {
+    stop("DEGs_lists must contain at least 2 datasets for RRA analysis")
+  }
+  
+  # Validate each element in the list
+  for (name in names(DEGs_lists)) {
+    df <- DEGs_lists[[name]]
+    if (!is.data.frame(df)) {
+      stop(paste("Element", name, "in DEGs_lists is not a data frame"))
+    }
+    if (!all(c("gene", "logFC", "P.Value") %in% colnames(df))) {
+      stop(paste("Element", name, "must contain 'gene', 'logFC', and 'P.Value' columns"))
+    }
+  }
+  
+  if (!is.numeric(top.num) || top.num < 0) {
+    stop("top.num must be a non-negative numeric value")
+  }
+  
+  if (!is.numeric(rra.p) || rra.p <= 0 || rra.p >= 1) {
+    stop("rra.p must be a numeric value between 0 and 1")
+  }
+  
+  if (!is.numeric(logFC_cut) || logFC_cut < 0) {
+    stop("logFC_cut must be a non-negative numeric value")
+  }
+  
+  if (!is.numeric(p_cut) || p_cut <= 0 || p_cut >= 1) {
+    stop("p_cut must be a numeric value between 0 and 1")
+  }
+  
   # Get lists of DEGs based on logFC and p-value cutoffs
   results <- get_DEGs_list(DEGs_lists, logFC_cut = logFC_cut, p_cut = p_cut)
 

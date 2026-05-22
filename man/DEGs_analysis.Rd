@@ -4,20 +4,30 @@
 \alias{DEGs_analysis}
 \title{Differential Expression Gene (DEG) Analysis}
 \usage{
-DEGs_analysis(df, tumor_subtype = NULL, ...)
+DEGs_analysis(
+  df,
+  tumor_subtype = NULL,
+  adjust_method = "BH",
+  confint = TRUE,
+  ...
+)
 }
 \arguments{
 \item{df}{A dataframe containing gene expression data with sample IDs as columns.}
 
 \item{tumor_subtype}{A character vector specifying the tumor subtypes to be analyzed. Default is NULL, which means all tumor subtypes will be included.}
 
+\item{adjust_method}{The method for adjusting p-values for multiple testing. Options include "none", "BH" (Benjamini-Hochberg), "BY" (Benjamini-Yekutieli), "holm", "hochberg", "hommel", "bonferroni". Default is "BH".}
+
+\item{confint}{Logical, whether to calculate confidence intervals for log fold changes. Default is TRUE.}
+
 \item{...}{Additional arguments passed to `lmFit`, `contrasts.fit`, and `eBayes`.}
 }
 \value{
-A dataframe with DEG analysis results, including log fold changes and p-values.
+A dataframe with DEG analysis results, including log fold changes, p-values, adjusted p-values, confidence intervals, and effect size metrics.
 }
 \description{
-Perform differential expression gene analysis on a given dataset.
+Perform differential expression gene analysis on a given dataset with comprehensive statistical metrics.
 }
 \examples{
 \dontrun{

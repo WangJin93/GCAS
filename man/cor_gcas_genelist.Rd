@@ -9,7 +9,9 @@ cor_gcas_genelist(
   geneset_data,
   tumor_subtype = NULL,
   sample_type = c("Tumor", "Normal"),
-  cor_method = "pearson"
+  cor_method = "pearson",
+  adjust_method = "BH",
+  conf_level = 0.95
 )
 }
 \arguments{
@@ -22,6 +24,13 @@ cor_gcas_genelist(
 \item{sample_type}{Sample type used for correlation analysis, default all types: c("Tumor", "Normal").}
 
 \item{cor_method}{Method for correlation analysis, default "pearson".}
+
+\item{adjust_method}{Method for adjusting p-values for multiple testing. Options include "none", "BH", "BY", "holm", "hochberg", "hommel", "bonferroni". Default is "BH".}
+
+\item{conf_level}{The confidence level for confidence interval calculation (default: 0.95).}
+}
+\value{
+A list containing the correlation results (including n, r, t, p, p.adj, ci_lower, ci_upper) and the merged data.
 }
 \description{
 Perform correlation analysis of the expression data in multiple datasets.

@@ -4,17 +4,24 @@
 \alias{get_data}
 \title{Get GEO expression data}
 \usage{
-get_data(table = "GSE74706", action = "expression", genes = c("GAPDH", "TNS1"))
+get_data(
+  table = "GSE74706",
+  action = "expression",
+  genes = c("GAPDH", "TNS1"),
+  api_url = NULL
+)
 }
 \arguments{
 \item{table}{For action = expression, use dataset$Abbre to get all tables; For action = clinic, remove _protein/_mRNA/_Phospho from dataset$Abbre.}
 
 \item{action}{"expression", "sample_info" or "geo_data".}
 
-\item{gene}{Gene symbols, you can input one or multiple symbols.}
+\item{genes}{Gene symbols, you can input one or multiple symbols.}
+
+\item{api_url}{Optional custom API URL. If NULL, uses the default GCAS API URL.}
 }
 \description{
-Get the GEO data by using the api. All results saved in MySQL database.
+Get the GEO data by using the API. All results saved in MySQL database.
 }
 \examples{
 \dontrun{

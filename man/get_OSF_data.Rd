@@ -4,12 +4,24 @@
 \alias{get_OSF_data}
 \title{Get GEO expression dataset and sample information in OSF repository}
 \usage{
-get_OSF_data(table = "GSE19188", action = "geo_data", retries = 2)
+get_OSF_data(
+  table = "GSE19188",
+  action = "geo_data",
+  retries = 2,
+  timeout = 60,
+  cache_dir = NULL
+)
 }
 \arguments{
 \item{table}{A character string specifying the GEO dataset identifier (e.g., "GSE19188").}
 
 \item{action}{A character string specifying the action, either "geo_data" to retrieve the expression data or "sample_info" to retrieve the sample information.}
+
+\item{retries}{Number of retries for failed downloads.}
+
+\item{timeout}{Timeout in seconds for download requests.}
+
+\item{cache_dir}{Optional custom cache directory. If NULL, uses default user cache directory.}
 }
 \value{
 A data frame containing the requested data.

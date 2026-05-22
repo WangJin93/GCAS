@@ -7,9 +7,9 @@
 viz_cor_heatmap(r, p)
 }
 \arguments{
-\item{r}{The correlation coefficient matrix r of the correlation analysis results obtained from the functions cor_pancancer_genelist(), cor_pancancer_TIL(), and cor_pancancer_drug().}
+\item{r}{The correlation coefficient matrix r of the correlation analysis results obtained from the functions cor_gcas_genelist(), cor_gcas_TIL(), and cor_gcas_drug().}
 
-\item{p}{The P-value matrix p of the correlation analysis results obtained from the functions cor_pancancer_genelist(), cor_pancancer_TIL(), and cor_pancancer_drug().}
+\item{p}{The P-value matrix p of the correlation analysis results obtained from the functions cor_gcas_genelist(), cor_gcas_TIL(), and cor_gcas_drug().}
 }
 \description{
 Presenting correlation analysis results using heat maps based on ggplot2.

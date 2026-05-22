@@ -4,12 +4,14 @@
 \alias{get_expr_data}
 \title{Retrieve Gene Expression Data}
 \usage{
-get_expr_data(datasets, genes)
+get_expr_data(datasets, genes, cache_dir = NULL)
 }
 \arguments{
 \item{datasets}{A character vector of dataset identifiers.}
 
 \item{genes}{A character vector of gene identifiers.}
+
+\item{cache_dir}{Optional custom cache directory. If NULL, uses default user cache directory.}
 }
 \value{
 A dataframe containing expression data for the specified genes from the given datasets.

@@ -1,8 +1,8 @@
 #' @title Visualization of correlation results
 #' @description Presenting correlation analysis results using heat maps based on ggplot2.
 #' @import dplyr psych ggplot2 reshape2 stringr ggtree aplot
-#' @param r The correlation coefficient matrix r of the correlation analysis results obtained from the functions cor_pancancer_genelist(), cor_pancancer_TIL(), and cor_pancancer_drug().
-#' @param p The P-value matrix p of the correlation analysis results obtained from the functions cor_pancancer_genelist(), cor_pancancer_TIL(), and cor_pancancer_drug().
+#' @param r The correlation coefficient matrix r of the correlation analysis results obtained from the functions cor_gcas_genelist(), cor_gcas_TIL(), and cor_gcas_drug().
+#' @param p The P-value matrix p of the correlation analysis results obtained from the functions cor_gcas_genelist(), cor_gcas_TIL(), and cor_gcas_drug().
 #' @examples
 #' \dontrun{
 #' genelist <- c("SIRPA","CTLA4","TIGIT","LAG3","VSIR","LILRB2","SIGLEC7","HAVCR2","LILRB4","PDCD1","BTLA")

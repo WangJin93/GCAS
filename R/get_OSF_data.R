@@ -2,15 +2,28 @@
 #' @description Retrieve GEO expression datasets and sample information from the OSF repository.
 #' @param table A character string specifying the GEO dataset identifier (e.g., "GSE19188").
 #' @param action A character string specifying the action, either "geo_data" to retrieve the expression data or "sample_info" to retrieve the sample information.
+#' @param retries Number of retries for failed downloads.
+#' @param timeout Timeout in seconds for download requests.
+#' @param cache_dir Optional custom cache directory. If NULL, uses default user cache directory.
 #' @return A data frame containing the requested data.
-#' @import httr stringr
+#' @import httr stringr rappdirs
 #' @examples
 #' \dontrun{
 #' df <- get_OSF_data(table = "GSE74706", action = "sample_info")
 #' df2 <- get_OSF_data(table = "GSE74706", action = "geo_data")
 #' }
 #' @export
-get_OSF_data <- function(table = "GSE19188", action = "geo_data", retries = 2, timeout = 60) {
+get_OSF_data <- function(table = "GSE19188", action = "geo_data", retries = 2, timeout = 60, cache_dir = NULL) {
+  
+  # Input validation
+  if (!is.character(table) || length(table) != 1) {
+    stop("table must be a single character string")
+  }
+  
+  if (!action %in% c("geo_data", "sample_info")) {
+    stop("action must be either 'geo_data' or 'sample_info'")
+  }
+  
   # If the table name contains an underscore, use only the part before the underscore
   if (str_detect(table, "_")) {
     table <- strsplit(table, "_")[[1]][1]
@@ -21,18 +34,25 @@ get_OSF_data <- function(table = "GSE19188", action = "geo_data", retries = 2, t
 
   # If the URL is NULL, return an error message and exit
   if (is.null(file_url)) {
-    cat(table, "was not found in GCAS database!\n")
+    warning(paste(table, "was not found in GCAS database!"))
     return(NULL)
   }
 
-  # Create necessary directories
-  base_dir <- "data_files"
+  # Determine cache directory
+  if (is.null(cache_dir)) {
+    base_dir <- rappdirs::user_cache_dir("GCAS")
+  } else {
+    base_dir <- cache_dir
+  }
+  
   action_dir <- file.path(base_dir, action)
+  
+  # Create necessary directories
   if (!dir.exists(base_dir)) {
-    dir.create(base_dir)
+    dir.create(base_dir, recursive = TRUE)
   }
   if (!dir.exists(action_dir)) {
-    dir.create(action_dir)
+    dir.create(action_dir, recursive = TRUE)
   }
 
   # Set the save path

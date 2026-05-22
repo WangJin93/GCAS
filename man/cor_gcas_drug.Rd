@@ -4,7 +4,13 @@
 \alias{cor_gcas_drug}
 \title{Correlation Analysis of Drug Sensitivity}
 \usage{
-cor_gcas_drug(df, cor_method = "pearson", Target.pathway = c("Cell cycle"))
+cor_gcas_drug(
+  df,
+  cor_method = "pearson",
+  Target.pathway = c("Cell cycle"),
+  adjust_method = "BH",
+  conf_level = 0.95
+)
 }
 \arguments{
 \item{df}{The expression data of the target gene in multiple datasets, obtained by the get_expr_data() function.}
@@ -12,6 +18,13 @@ cor_gcas_drug(df, cor_method = "pearson", Target.pathway = c("Cell cycle"))
 \item{cor_method}{Method for correlation analysis, default "pearson".}
 
 \item{Target.pathway}{The signaling pathways of anti-tumor drug targets, default "Cell cycle". Use "drug_info" to get the detailed information of these drugs.}
+
+\item{adjust_method}{Method for adjusting p-values for multiple testing. Options include "none", "BH", "BY", "holm", "hochberg", "hommel", "bonferroni". Default is "BH".}
+
+\item{conf_level}{The confidence level for confidence interval calculation (default: 0.95).}
+}
+\value{
+A list containing the correlation results (including n, r, t, p, p.adj, ci_lower, ci_upper) and the merged data.
 }
 \description{
 Calculate the correlation between target gene expression and anti-tumor drug sensitivity in multiple datasets.

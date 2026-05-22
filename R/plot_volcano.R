@@ -21,7 +21,21 @@
 plot_volcano <- function(results, p.cut = 0.05, logFC.cut = 1,
                          show.top = FALSE, show.labels = NULL,
                          colors = c("blue", "grey20", "red")) {
-
+  
+  # Validate input data
+  if (is.null(results) || !is.data.frame(results) || nrow(results) == 0) {
+    warning("Invalid or empty results data frame")
+    return(NULL)
+  }
+  
+  # Check required columns exist
+  required_cols <- c("adj.P.Val", "P.Value", "logFC")
+  if (!all(required_cols %in% colnames(results))) {
+    missing <- setdiff(required_cols, colnames(results))
+    warning(paste("Required column(s) not found:", paste(missing, collapse = ", ")))
+    return(NULL)
+  }
+  
   # Ensure numeric types
   results$adj.P.Val <- as.numeric(results$adj.P.Val)
   results$P.Value <- as.numeric(results$P.Value)

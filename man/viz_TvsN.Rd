@@ -11,7 +11,7 @@ viz_TvsN(
   Show.P.value = TRUE,
   Show.P.label = TRUE,
   Method = "t.test",
-  values = c("#00AFBB", "#FC4E07"),
+  values = gcas_palette(2),
   Show.n = TRUE,
   Show.n.location = "default"
 )
@@ -21,13 +21,15 @@ viz_TvsN(
 
 \item{df_type}{The type of gene expression data, one value of "single","multi_gene", and "multi_set".}
 
+\item{tumor_subtype}{Tumor subtype for filtering data.}
+
 \item{Show.P.value}{Whether to display the results of differential analysis, default TRUE.}
 
 \item{Show.P.label}{Whether to display significance markers for differential analysis, default TRUE.}
 
 \item{Method}{Methods of differential analysis, "t.test" or "limma", default "t.test".}
 
-\item{values}{Color palette for normal and tumor groups. Default c("#00AFBB", "#FC4E07").}
+\item{values}{Color palette for normal and tumor groups. Default gcas_palette(2).}
 
 \item{Show.n}{Display sample size.}
 

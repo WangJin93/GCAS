@@ -1,8 +1,9 @@
 #' @title Retrieve Gene Expression Data
 #' @description Retrieve expression data for specified genes from given datasets.
-#' @import plyr tibble digest
+#' @import plyr tibble digest rappdirs
 #' @param datasets A character vector of dataset identifiers.
 #' @param genes A character vector of gene identifiers.
+#' @param cache_dir Optional custom cache directory. If NULL, uses default user cache directory.
 #' @return A dataframe containing expression data for the specified genes from the given datasets.
 #' @examples
 #' \dontrun{
@@ -11,15 +12,32 @@
 #' results <- get_expr_data(datasets = c("GSE62113","GSE74706"), genes = c("SIRPA","CTLA4","TIGIT","LAG3","VSIR","LILRB2","SIGLEC7","HAVCR2","LILRB4","PDCD1","BTLA"))
 #' }
 #' @export
-get_expr_data <- function(datasets, genes) {
-  # 创建缓存目录（如果不存在）
-  base_dir <- "data_files"
+get_expr_data <- function(datasets, genes, cache_dir = NULL) {
+  
+  # Input validation
+  if (!is.character(datasets)) {
+    stop("datasets must be a character vector")
+  }
+  
+  if (!is.character(genes)) {
+    stop("genes must be a character vector")
+  }
+  
+  # Determine cache directory
+  if (is.null(cache_dir)) {
+    base_dir <- rappdirs::user_cache_dir("GCAS")
+  } else {
+    base_dir <- cache_dir
+  }
+  
   action_dir <- file.path(base_dir, "data_temp")
+  
+  # Create cache directories if they don't exist
   if (!dir.exists(base_dir)) {
-    dir.create(base_dir)
+    dir.create(base_dir, recursive = TRUE)
   }
   if (!dir.exists(action_dir)) {
-    dir.create(action_dir)
+    dir.create(action_dir, recursive = TRUE)
   }
 
   # 检查基因向量是否为空

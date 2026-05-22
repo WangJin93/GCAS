@@ -145,7 +145,7 @@ server <- function(input, output) {
   callModule(server.modules_GSEA, "GSEA")
   callModule(server.modules_venn, "venn")
   callModule(server.modules_RRA, "RRA")
-  callModule(server.modules_combat, "combat")
+  callModule(server.modules_combat, "combat", shared_values)
   callModule(server.modules_co_expression, "co_expression")
   callModule(mod_feedback_server, "feedback")
 }

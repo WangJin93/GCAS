@@ -18,6 +18,33 @@
 #' }
 #' @export
 GSEA_analysis <- function(data, gmt_file, pvalue_cutoff = 0.05, data_type = "correlation") {
+  
+  # Input validation
+  if (is.null(data)) {
+    warning("Input data is NULL")
+    return(NULL)
+  }
+  
+  if (!is.data.frame(data)) {
+    stop("data must be a data frame")
+  }
+  
+  if (is.null(gmt_file)) {
+    stop("gmt_file cannot be NULL")
+  }
+  
+  if (!is.numeric(pvalue_cutoff) || pvalue_cutoff <= 0 || pvalue_cutoff >= 1) {
+    stop("pvalue_cutoff must be a numeric value between 0 and 1")
+  }
+  
+  if (!data_type %in% c("correlation", "limma")) {
+    stop("data_type must be either 'correlation' or 'limma'")
+  }
+  
+  required_cols <- if (data_type == "correlation") c("gene", "r") else c("gene", "logFC")
+  if (!all(required_cols %in% colnames(data))) {
+    stop(paste("data must contain columns:", paste(required_cols, collapse = ", ")))
+  }
 
   # Check the input data type and process data accordingly
   if (data_type == "correlation") {

@@ -1,20 +1,10 @@
 \name{TIL_map}
 \alias{TIL_map}
 \docType{data}
-\title{
-Mapping of immune cell types and algorithms
-}
-\description{
-Mapping of immune cell types and algorithms
-}
+\title{TIL mapping data}
+\description{TIL mapping data for immune cell types.}
 \usage{data("TIL_map")}
-\format{
-  A data frame with 137 observations on the following 2 variables.
-  \describe{
-    \item{\code{cell_type}}{a character vector}
-    \item{\code{algorithm}}{a character vector}
-  }
-}
+\format{A data frame with TIL mapping information.}
 \examples{
 data(TIL_map)
 str(TIL_map)

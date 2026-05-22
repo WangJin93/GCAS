@@ -26,9 +26,8 @@ combat_datasets <- function(tables, tumor_subtype = NULL) {
     data <- data[!duplicated(data$ID), ]
     rownames(data) <- NULL
     # Set the first column as row names and remove it from data
-    data <- data %>%
-      column_to_rownames(var = "ID") %>%
-      as.data.frame()
+    data <- tibble::column_to_rownames(data, var = "ID")
+    data <- as.data.frame(data)
 
     # Append the dataset to the list
     data_list[[table]] <- data
@@ -50,17 +49,18 @@ combat_datasets <- function(tables, tumor_subtype = NULL) {
   tumor_subtype2 <- c(extract_subset(subtype, tumor_subtype), "Normal")
 
   if (is.null(tumor_subtype2)) {
-    sample_info <- sample_subtype %>%
-      filter(ID %in% colnames(combined_data)) %>%
-      select(dataset, ID, subtype)
+    sample_info <- dplyr::filter(sample_subtype, ID %in% colnames(combined_data))
+    # 选择所有需要的列，包括 tissue 和 Patient.ID
+    sample_info <- dplyr::select(sample_info, dataset, ID, subtype, tissue, Patient.ID)
   } else {
-    sample_info <- sample_subtype %>%
-      filter(ID %in% colnames(combined_data)) %>%
-      filter(subtype %in% tumor_subtype2) %>%
-      select(dataset, ID, subtype)
+    sample_info <- dplyr::filter(sample_subtype, ID %in% colnames(combined_data))
+    sample_info <- dplyr::filter(sample_info, subtype %in% tumor_subtype2)
+    # 选择所有需要的列，包括 tissue 和 Patient.ID
+    sample_info <- dplyr::select(sample_info, dataset, ID, subtype, tissue, Patient.ID)
   }
 
-  dd <- sample_info %>% filter(subtype != "Normal") %>% .[,"dataset"]
+  dd <- dplyr::filter(sample_info, subtype != "Normal")
+  dd <- dd[, "dataset"]
 
   if (length(unique(dd)) != length(tables)) {
     cat(paste0("Warning! Only the following datasets contain the input subtype: ", paste(unique(dd), collapse = ","), "\n"))
@@ -74,7 +74,8 @@ combat_datasets <- function(tables, tumor_subtype = NULL) {
   sample_info$type <- ifelse(sample_info$subtype == "Normal", "Normal",
                              ifelse(sample_info$subtype %in% c("Adenoma", "polyp", "Cirrhosis", "HSIL", "CIN", "MGUS", "SMM"),
                                     "Premalignant", "Tumor"))
-  sample_info <- sample_info %>% dplyr::filter(type != "Premalignant") %>% tibble::column_to_rownames("ID")
+  sample_info <- dplyr::filter(sample_info, type != "Premalignant")
+  sample_info <- tibble::column_to_rownames(sample_info, "ID")
 
   combined_data <- combined_data[rownames(sample_info)]
 
