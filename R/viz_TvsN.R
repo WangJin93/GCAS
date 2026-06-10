@@ -199,11 +199,33 @@ viz_TvsN <- function(df, df_type = c("single", "multi_gene", "multi_set"),
   # Multi-dataset visualization
   if (df_type == "multi_set") {
     # Get gene column (third column)
+    if (ncol(df) < 3) {
+      warning("Dataset does not contain expression columns")
+      return(NULL)
+    }
+    
     gene_col <- colnames(df)[3]
     df <- df %>% 
       dplyr::rename(value = all_of(gene_col)) %>%
       dplyr::mutate(value = as.numeric(value)) %>%
       dplyr::filter(!is.na(value))
+    
+    # Filter out datasets that don't have both Normal and Tumor types
+    dataset_types <- df %>%
+      dplyr::group_by(dataset) %>%
+      dplyr::summarize(n_types = dplyr::n_distinct(type))
+    
+    valid_datasets <- dataset_types %>%
+      dplyr::filter(n_types >= 2) %>%
+      dplyr::pull(dataset)
+    
+    if (length(valid_datasets) == 0) {
+      warning("No datasets contain both Normal and Tumor types for comparison")
+      return(NULL)
+    }
+    
+    df <- df %>%
+      dplyr::filter(dataset %in% valid_datasets)
     
     # Calculate p-values if requested
     pv <- NULL
