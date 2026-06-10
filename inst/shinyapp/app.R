@@ -59,7 +59,27 @@ source("apps/modules_venn.R")
 source("apps/modules_combat.R")
 source("apps/mod_feedback.R")
 # Define UI for application that draws a histogram
-ui <- bs4Dash::dashboardPage(
+ui <- tagList(
+  waiter::use_waiter(),
+  waiter::waiterShowOnLoad(
+    html = tagList(
+      div(style = "text-align: center; padding-top: 20%;"),
+      img(src = 'logo.png', width = "150px", style = "display: block; margin: 0 auto;"),
+      h3("Loading GCAS...", style = "color: #333; margin-top: 20px;"),
+      div(class = "loader", style = "width: 60px; height: 60px; border: 6px solid #f3f3f3; border-top: 6px solid #007bff; border-radius: 50%; animation: spin 2s linear infinite; margin: 20px auto;")
+    ),
+    color = "rgba(255, 255, 255, 0.98)"
+  ),
+  tags$head(
+    tags$style("
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    ")
+  ),
+  
+  bs4Dash::dashboardPage(
   bs4Dash::dashboardHeader(
     title = tags$a(href='https://github.com/WangJin93/GCAS',
                    tags$img(src='logo.png',width="100%"),
@@ -120,16 +140,43 @@ ui <- bs4Dash::dashboardPage(
     )
   )
 )
+)
 
 # Define server logic required to draw a histogram
-server <- function(input, output) {
+server <- function(input, output, session) {
   # 创建一个全局的 reactiveValues 对象来存储共享变量
   shared_values <- reactiveValues(
     type_select = NULL,
     subtypes = NULL,
     datasets_text = NULL,
-    datasets_select = NULL
+    datasets_select = NULL,
+    is_loading = FALSE,
+    loading_message = ""
   )
+  
+  # 初始化完成后延迟15秒隐藏加载屏幕
+  session$onFlushed(function() {
+    Sys.sleep(15)
+    waiter::waiter_hide()
+  })
+  
+  # 全局加载状态指示器
+  observe({
+    if (shared_values$is_loading) {
+      waiter::waiter_show(
+        html = tagList(
+          div(style = "text-align: center;"),
+          div(class = "loader", style = "width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"),
+          p(shared_values$loading_message, style = "color: #666; margin-top: 15px;")
+        ),
+        color = "rgba(255, 255, 255, 0.9)",
+        id = "global-loader"
+      )
+    } else {
+      waiter::waiter_hide(id = "global-loader")
+    }
+  })
+  
   callModule(server.modules_dash, "Welcome")
   callModule(server.modules_GEO_datasets, "dataset", shared_values)
   callModule(server.modules_Cancer_expression, "Single", shared_values)
