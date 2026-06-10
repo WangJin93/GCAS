@@ -8,6 +8,13 @@ ui.modules_GEO_datasets <- function(id) {
         width = 2,
         br(),
     HTML("<p><strong>Cancer types:</strong></p>"),
+    selectInput(
+      inputId = ns("cancer_type_select"),
+      label = NULL,
+      choices = c("Select from tree", "Integrated data"),
+      selected = "Select from tree",
+      multiple = FALSE
+    ),
     shinyTree(ns("subtype"), theme="proton",stripes=T, themeIcons = F,multiple=T, themeDots = T),
     br(),
         uiOutput(ns("datasets_text")),
@@ -41,6 +48,39 @@ ui.modules_GEO_datasets <- function(id) {
 server.modules_GEO_datasets <- function(input, output, session, shared_values) {
   ns <- session$ns
   # df <- dataset
+  
+  # 检查是否刚完成整合分析，如果是，自动选择 Integrated data
+  observe({
+    if (!is.null(shared_values$just_completed_combat) && shared_values$just_completed_combat) {
+      # 自动选择 Integrated data
+      updateSelectInput(session, "cancer_type_select", selected = "Integrated data")
+      # 清除标志
+      shared_values$just_completed_combat <- FALSE
+    }
+  })
+  
+  # 控制 shinyTree 的显示
+  observe({
+    if (input$cancer_type_select == "Integrated data") {
+      shinyjs::hide(ns("subtype"))
+    } else {
+      shinyjs::show(ns("subtype"))
+    }
+  })
+  
+  # 监听 shinyTree 的选择变化，如果用户选择了tree中的项目，自动切换回 "Select from tree"
+  observeEvent(input$subtype, {
+    tree <- input$subtype
+    if (!is.null(tree)) {
+      selected <- get_selected(tree, format = "classid")
+      # 检查是否有选中的项目
+      has_selection <- length(selected) > 0 && any(sapply(selected, function(x) length(x) > 0))
+      if (has_selection) {
+        # 自动切换回 "Select from tree"
+        updateSelectInput(session, "cancer_type_select", selected = "Select from tree")
+      }
+    }
+  })
 
   output$subtype <- renderTree({
     subtype
@@ -52,6 +92,17 @@ server.modules_GEO_datasets <- function(input, output, session, shared_values) {
   #   print(extract_subset(subtype,nn))
   # })
   selected_types <- reactive({
+    # 如果选择了 Integrated data，返回 NULL，因为我们会在 output$datasets_text 中单独处理
+    if (input$cancer_type_select == "Integrated data") {
+      # 设置 subtypes 为整合数据的 subtypes
+      if (!is.null(shared_values$subtypes_combat)) {
+        shared_values$subtypes <- shared_values$subtypes_combat
+      } else {
+        shared_values$subtypes <- "Integrated"
+      }
+      return(NULL)
+    }
+    
     tree <- input$subtype
     req(tree)
     nn<- sapply(get_selected(tree, format = "classid"), function(x) x[1])
@@ -71,27 +122,76 @@ server.modules_GEO_datasets <- function(input, output, session, shared_values) {
 
 
   output$datasets_text <- renderUI({
-     if (!is.null(input$subtype)){
-       selectInput(
-         inputId = ns("datasets_text"),
-         label = "Select dataset:",
-         choices = selected_types(),
-         multiple = FALSE
-       )
-
-       }else{
-         selectInput(
+     # 如果选择了 Integrated data
+     if (input$cancer_type_select == "Integrated data") {
+       has_combat <- !is.null(shared_values$combat_data)
+       
+       if (has_combat) {
+         dataset_choices <- c("Integrated data (ComBat)" = "Integrated data (ComBat)")
+         return(selectInput(
            inputId = ns("datasets_text"),
            label = "Select dataset:",
-           choices = "",
+           choices = dataset_choices,
+           selected = "Integrated data (ComBat)",
            multiple = FALSE
-         )
-
+         ))
+       } else {
+         return(HTML("<p><strong>Please run ComBat analysis first.</strong></p>"))
+       }
      }
-
+     
+     # 检查是否有整合数据
+     has_combat <- !is.null(shared_values$combat_data)
+     
+     # 构建数据集选项
+     dataset_choices <- c()
+     
+     if (!is.null(input$subtype)){
+       dataset_choices <- selected_types()
+     }
+     
+     # 如果有整合数据，添加到选项中
+     if (has_combat) {
+       dataset_choices <- c("Integrated data (ComBat)" = "Integrated data (ComBat)", dataset_choices)
+     }
+     
+     selectInput(
+       inputId = ns("datasets_text"),
+       label = "Select dataset:",
+       choices = dataset_choices,
+       multiple = FALSE
+     )
   })
 
   df_select <- reactive({
+    # 如果选择了 Integrated data
+    if (input$cancer_type_select == "Integrated data") {
+      has_combat <- !is.null(shared_values$combat_data)
+      
+      if (has_combat) {
+        # 创建一个临时的数据集信息表格，显示整合数据的信息
+        combat_datasets <- shared_values$combat_datasets
+        combat_subtypes <- shared_values$subtypes_combat
+        
+        # 计算样本数量
+        sample_info <- shared_values$combat_sample_info
+        tumor_count <- sum(sample_info$type == "Tumor")
+        normal_count <- sum(sample_info$type == "Normal")
+        
+        return(data.frame(
+          type = "Integrated data",
+          dataset = "Integrated data (ComBat)",
+          Normal_Adjacent = normal_count,
+          Tumor = tumor_count,
+          Premalignant = 0,
+          Paired = "F",
+          stringsAsFactors = FALSE
+        ))
+      } else {
+        return(dataset_info)
+      }
+    }
+    
     if (!is.null(input$subtype)){
       tree <- input$subtype
       req(tree)
@@ -119,6 +219,17 @@ server.modules_GEO_datasets <- function(input, output, session, shared_values) {
     s <- input$geo_table_rows_selected
     if (length(s)) {
       ddd <- df_select()%>% .[s,]
+    }
+    
+    # 如果选择了 Integrated data
+    if (input$cancer_type_select == "Integrated data") {
+      if (!is.null(ddd)) {
+        updateSelectInput(session, "datasets_text",
+                          label = "Select dataset:",
+                          selected = ddd$dataset
+        )
+      }
+      return()
     }
 
     if (!is.null(input$subtype)){

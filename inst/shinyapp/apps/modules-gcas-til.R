@@ -206,27 +206,92 @@ server.modules_gcas_til <- function(input, output, session) {
   plot_data <- eventReactive(input$search_bttn, {
       p <- plot_func()
     if (is.null(p)) return(NULL)
-    rvalue_T<-as.data.frame(p$r) %>%  rownames_to_column("immune_cells")
-    pvalue_T<-as.data.frame(p$p) %>%  rownames_to_column("immune_cells")
-    pdata<-gather(as.data.frame(rvalue_T),Dataset,corr,-immune_cells)
-    pvalue_T<-gather(as.data.frame(pvalue_T),Dataset,PValue,-immune_cells)
-    pdata <- merge(pdata,pvalue_T,by=c("Dataset","immune_cells"))
-    pdata$pstar <- ifelse(pdata$PValue < 0.05,
-                          ifelse(pdata$PValue < 0.001, "***", ifelse(pdata$PValue < 0.01, "**", "*")),
-                          ""
+    
+    # 使用 plist 返回格式：转换矩阵为长格式数据框
+    # plist 包含: r, p, p_adj, n, t, ci_lower, ci_upper, sss
+    # 矩阵结构: 行 = 数据集, 列 = 免疫细胞
+    
+    # 获取矩阵维度
+    n_datasets <- nrow(p$r)
+    n_cells <- ncol(p$r)
+    total_rows <- n_datasets * n_cells
+    
+    # 创建 Dataset 和 Cell_Type 列
+    Dataset <- rep(rownames(p$r), each = n_cells)
+    Cell_Type <- rep(colnames(p$r), n_datasets)
+    
+    # 提取统计量，确保长度一致
+    extract_stat <- function(mat) {
+      vec <- as.numeric(mat)
+      if (length(vec) != total_rows) {
+        warning(paste("Matrix dimension mismatch, expected", total_rows, "got", length(vec)))
+        vec <- rep(NA, total_rows)
+      }
+      return(vec)
+    }
+    
+    n <- extract_stat(p$n)
+    r <- extract_stat(p$r)
+    t_val <- extract_stat(p$t)
+    p_val <- extract_stat(p$p)
+    p_adj <- extract_stat(p$p_adj)
+    ci_lower <- extract_stat(p$ci_lower)
+    ci_upper <- extract_stat(p$ci_upper)
+    
+    result_df <- data.frame(
+      Cell_Type = Cell_Type,
+      Dataset = Dataset,
+      n = n,
+      r = r,
+      t = t_val,
+      p = p_val,
+      p.adj = p_adj,
+      ci_lower = ci_lower,
+      ci_upper = ci_upper
     )
-    return(pdata)
+    
+    # 添加显著性标记
+    result_df$pstar <- ifelse(result_df$p.adj < 0.05,
+                             ifelse(result_df$p.adj < 0.001, "***", ifelse(result_df$p.adj < 0.01, "**", "*")),
+                             "")
+    
+    # 格式化数字精度为小数点后3位
+    format_num <- function(x, digits = 3) {
+      ifelse(is.na(x), NA, sprintf(paste0("%.", digits, "f"), x))
+    }
+    
+    # 格式化 p 值和 p.adj（小于 0.001 显示为 <0.001）
+    format_pval <- function(x) {
+      ifelse(is.na(x), NA, ifelse(x < 0.001, "<0.001", sprintf("%.3f", x)))
+    }
+    
+    result_df$n <- format_num(result_df$n)
+    result_df$r <- format_num(result_df$r)
+    result_df$t <- format_num(result_df$t)
+    result_df$p <- format_pval(result_df$p)
+    result_df$p.adj <- format_pval(result_df$p.adj)
+    result_df$ci_lower <- format_num(result_df$ci_lower)
+    result_df$ci_upper <- format_num(result_df$ci_upper)
+    
+    # 重命名列以便显示
+    colnames(result_df) <- c("Dataset","Cell_Type",  "n", "r", "t", "p", "p.adj", "ci_lower", "ci_upper", "Significance")
+    
+    return(result_df)
   })
   TIL_corr_func <- eventReactive(input$tbl_rows_selected, {
     s <- input$tbl_rows_selected
     if (length(s)) {
       selected <- plot_data()[s,]
-      #data<- df[which(df$tissue == type),]
-      checkpoint <- selected$immune_cells
-      Dataset <- selected$Dataset
-      df <- plot_func()$sss[[Dataset]]
+      checkpoint <- selected$Cell_Type
+      # 使用 plist 返回格式：根据选中的数据集获取数据
+      df <- plot_func()$sss[[selected$Dataset]]
+      # 找到包含目标细胞类型的列
+      target_col_idx <- which(colnames(df) == checkpoint)
+      if (length(target_col_idx) == 0) {
+        return(NULL)
+      }
       print(df)
-      df <- df[,c("ID","tissue","dataset",colnames(df)[3],checkpoint)]
+      df <- df[,c("ID","tissue","subtype","dataset",colnames(df)[3],checkpoint)]
     }
     rownames(df)<-NULL
     return(df)
@@ -237,7 +302,8 @@ server.modules_gcas_til <- function(input, output, session) {
                                           height = height_scatter,{
     w$show() # Waiter add-ins
                                             if (!is.null(plot_func())){
-                                              viz_cor_heatmap(plot_func()$r,plot_func()$p)
+                                              # 使用 plist 返回格式
+                                              viz_cor_heatmap(plot_func()$r, plot_func()$p)
 
                                             }
 
@@ -263,8 +329,10 @@ server.modules_gcas_til <- function(input, output, session) {
 
       output$scatter_plot <- renderPlot(width = 450,
                                         height = 300,{
-                                          df<-TIL_corr_func() %>% na.omit()
-                                          viz_corplot(df,colnames(df)[4],colnames(df)[5],method=input$cor_method,x_lab= " expression",y_lab= "")
+                                          # 使用新的返回格式
+                                          cor_result <- TIL_corr_func()
+                                          viz_corplot(cor_result, colnames(cor_result)[5], colnames(cor_result)[6],
+                                                     method = input$cor_method, x_lab = " expression", y_lab = "")
 
                                         })
       # output$scatter_corr <- DT::renderDataTable(
@@ -336,7 +404,8 @@ server.modules_gcas_til <- function(input, output, session) {
     },
     content = function(file) {
         pdf(file,  width =  input$width_scatter/70 ,height = input$height_scatter/70)
-      print(viz_cor_heatmap(plot_func()$r,plot_func()$p))
+      # 使用 plist 返回格式
+      print(viz_cor_heatmap(plot_func()$r, plot_func()$p))
       dev.off()
     }
   )
@@ -384,31 +453,47 @@ server.modules_gcas_til <- function(input, output, session) {
     height_scatter1 <- reactive ({ input$height_scatter1 })
     output$scatter_plot1 <- renderPlot(width = width_scatter1,
                                        height = height_scatter1,{
-                                         p <- plot_func()
-                                         viz_cor_volcano(p,item = input$gene_select,
+                                         # 使用新的返回格式
+                                         viz_cor_volcano(plot_func(), item = input$gene_select,
                                                          r.cut = input$xinter,
                                                          p.cut = as.numeric(input$yinter),
                                                          colors = unlist(strsplit(input$values, ',')))
                                        })
 
     output$scatter_corr1 <- DT::renderDataTable(server = F, {
-      cor_result <- plot_func()
+      # 获取 plot_func 的结果
+      plot_result <- plot_func()
+      if (is.null(plot_result)) {
+        return(NULL)
+      }
+      
       gene <- input$gene_select
       r.cut = input$xinter
       p.cut = as.numeric(input$yinter)
-      results <- data.frame(r = cor_result$r[gene,],
-                            p = cor_result$p[gene,])
+
+      # 从矩阵格式转换为数据框格式（与 viz_cor_volcano 一致）
+      if (gene %in% rownames(plot_result$r)) {
+        # 只使用 r 和 p 列，然后进行 na.omit
+        cor_result_df <- data.frame(
+          Symbol = colnames(plot_result$r),
+          r = plot_result$r[gene, ],
+          p = plot_result$p[gene, ],
+          p.adj = plot_result$p_adj[gene, ]
+        ) %>% na.omit()
+      } else {
+        return(NULL)
+      }
 
       # Determine change status
-      results$change <- ifelse(results$p < p.cut,
-                               ifelse(results$r < -r.cut, "negative",
-                                      ifelse(results$r > r.cut, "positive", "no")),
-                               "no")
+      cor_result_df$change <- ifelse(cor_result_df$p.adj < p.cut,
+                                     ifelse(cor_result_df$r < -r.cut, "negative",
+                                            ifelse(cor_result_df$r > r.cut, "positive", "no")),
+                                     "no")
       # Arrange results by r
-      results <- dplyr::arrange(results, r)
+      results <- dplyr::arrange(cor_result_df, r)
       DT::datatable(
         results,
-        rownames = T,
+        rownames = F,
         selection =  "single",
         extensions = c("Buttons"),
         options = list(

@@ -225,12 +225,37 @@ server.modules_gcas_corr <- function(input, output, session) {
       ))
       return(NULL)
 
-    }else{
-      if (length(colnames(dd))-3 < length(ga_ids)){
+    } else {
+      # 验证必要列是否存在
+      required_cols <- c("ID", "subtype", "dataset", "tissue", "Patient.ID")
+      if (!all(required_cols %in% colnames(dd))) {
+        missing <- setdiff(required_cols, colnames(dd))
         showModal(modalDialog(
           title = "Message",   easyClose = TRUE,
-          paste0("The selected datasets only contain the following gene symbols: ", paste(colnames(dd)[6:(ncol(dd))],collapse = " ,") )
-        ))}
+          paste0("Missing required columns: ", paste(missing, collapse = " ,"))
+        ))
+        return(NULL)
+      }
+
+      # 获取实际返回的基因列
+      non_expr_cols <- c(required_cols, "type")
+      actual_gene_cols <- setdiff(colnames(dd), non_expr_cols)
+
+      if (length(actual_gene_cols) < length(ga_ids)) {
+        missing_genes <- setdiff(ga_ids, actual_gene_cols)
+        showModal(modalDialog(
+          title = "Message",   easyClose = TRUE,
+          paste0("The following gene symbols are not found in the selected datasets: ", paste(missing_genes, collapse = " ,"))
+        ))
+      }
+
+      if (length(actual_gene_cols) == 0) {
+        showModal(modalDialog(
+          title = "Message",   easyClose = TRUE,
+          "No gene symbols were found in the selected datasets."
+        ))
+        return(NULL)
+      }
     }
     return(dd)
   })
@@ -249,11 +274,23 @@ server.modules_gcas_corr <- function(input, output, session) {
         return(NULL)
       }
       nn<- subtype_selected()
-      if (is.null(geneset_data())){
+      gd <- geneset_data()
+      if (is.null(gd)){
         return(NULL)
       }
 
-      p <- cor_gcas_genelist(df,geneset_data(),
+      # 验证 geneset_data 返回的数据格式
+      required_cols <- c("ID", "subtype", "dataset", "tissue", "Patient.ID")
+      gene_cols <- setdiff(colnames(gd), required_cols)
+      if (length(gene_cols) < 2) {
+        showModal(modalDialog(
+          title = "Message",   easyClose = TRUE,
+          "Geneset must contain at least 2 genes for correlation analysis."
+        ))
+        return(NULL)
+      }
+
+      p <- cor_gcas_genelist(df, gd,
                              tumor_subtype = nn,
                              sample_type = input$sample_type,
                              cor_method = input$cor_method)
@@ -267,16 +304,58 @@ server.modules_gcas_corr <- function(input, output, session) {
 
     if (is.null(p)) return(NULL)
 
-    rvalue_T<-as.data.frame(p$r) %>%  rownames_to_column("Gene")
-    pvalue_T<-as.data.frame(p$p) %>%  rownames_to_column("Gene")
-    pdata<-gather(as.data.frame(rvalue_T),Dataset,corr,-Gene)
-    pvalue_T<-gather(as.data.frame(pvalue_T),Dataset,PValue,-Gene)
-    pdata <- merge(pdata,pvalue_T,by=c("Dataset","Gene"))
-    pdata$pstar <- ifelse(pdata$PValue < 0.05,
-                          ifelse(pdata$PValue < 0.001, "***", ifelse(pdata$PValue < 0.01, "**", "*")),
-                          ""
+    # 使用 plist 返回格式：转换矩阵为长格式数据框
+    # plist 包含: r, p, p_adj, n, t, ci_lower, ci_upper, sss
+    # 矩阵结构: 行 = 数据集, 列 = 基因
+
+    # 获取矩阵维度
+    n_datasets <- nrow(p$r)
+    n_genes <- ncol(p$r)
+    total_rows <- n_datasets * n_genes
+
+    # 创建 Dataset 和 Symbol 列
+    Dataset <- rep(rownames(p$r), each = n_genes)
+    Symbol <- rep(colnames(p$r), n_datasets)
+
+    # 提取统计量，确保长度一致
+    extract_stat <- function(mat) {
+      vec <- as.numeric(mat)
+      if (length(vec) != total_rows) {
+        warning(paste("Matrix dimension mismatch, expected", total_rows, "got", length(vec)))
+        vec <- rep(NA, total_rows)
+      }
+      return(vec)
+    }
+
+    n <- extract_stat(p$n)
+    r <- extract_stat(p$r)
+    t_val <- extract_stat(p$t)
+    p_val <- extract_stat(p$p)
+    p_adj <- extract_stat(p$p_adj)
+    ci_lower <- extract_stat(p$ci_lower)
+    ci_upper <- extract_stat(p$ci_upper)
+
+    result_df <- data.frame(
+      Symbol = Symbol,
+      Dataset = Dataset,
+      n = n,
+      r = r,
+      t = t_val,
+      p = p_val,
+      p.adj = p_adj,
+      ci_lower = ci_lower,
+      ci_upper = ci_upper
     )
-    return(pdata)
+
+    # 添加显著性标记
+    result_df$pstar <- ifelse(result_df$p.adj < 0.05,
+                             ifelse(result_df$p.adj < 0.001, "***", ifelse(result_df$p.adj < 0.01, "**", "*")),
+                             "")
+
+    # 重命名列以便显示
+    colnames(result_df) <- c( "Dataset","Gene/Symbol", "n", "r", "t", "p", "p.adj", "ci_lower", "ci_upper", "Significance")
+
+    return(result_df)
   })
   width_scatter <- reactive ({ input$width_scatter })
   height_scatter <- reactive ({ input$height_scatter })
@@ -285,7 +364,8 @@ server.modules_gcas_corr <- function(input, output, session) {
                                           height = height_scatter,{
     w$show() # Waiter add-ins
                                             if (!is.null(plot_func())){
-                                              viz_cor_heatmap(plot_func()$r,plot_func()$p)
+                                              # 使用 plist 返回格式
+                                              viz_cor_heatmap(plot_func()$r, plot_func()$p)
                                             }
                                           })
 
@@ -294,10 +374,16 @@ server.modules_gcas_corr <- function(input, output, session) {
     if (length(s)) {
       selected <- plot_data()[s,]
       #data<- df[which(df$type == type),]
-      checkpoint <- selected$Gene
-      cancer <- selected$Dataset
-      df <- plot_func()$sss[[cancer]]
+      checkpoint <- selected$`Gene/Symbol`
+      # 使用 plist 返回格式：从 sss 获取合并数据
+      df <- plot_func()$sss[[selected$Dataset]]
+      # 找到包含目标基因的列
+      target_col_idx <- which(colnames(df) == checkpoint)
+      if (length(target_col_idx) == 0) {
+        return(NULL)
+      }
       df <- df[,c("ID","subtype","dataset","type",colnames(df)[6],checkpoint)]
+      print(df$dataset %>% unique())
       return(df)
     }
     return(df)
@@ -326,8 +412,10 @@ server.modules_gcas_corr <- function(input, output, session) {
 
       output$scatter_plot <- renderPlot(width = 450,
                                         height = 300,{
-                                          df<-corr_func() %>% na.omit()
-                                          viz_corplot(df,colnames(df)[5],colnames(df)[6],method=input$cor_method,x_lab= " exppression",y_lab=" exppression")
+                                          # 使用新的返回格式
+                                          cor_result <- corr_func()
+                                          viz_corplot(cor_result, colnames(cor_result)[5], colnames(cor_result)[6],
+                                                     method = input$cor_method, x_lab = " expression", y_lab = " expression")
 
                                         })
       output$scatter_corr <- DT::renderDataTable(server = TRUE,{
@@ -394,7 +482,8 @@ server.modules_gcas_corr <- function(input, output, session) {
     },
     content = function(file) {
         pdf(file,  width =  input$width_scatter/70 ,height = input$height_scatter/70)
-      print(viz_cor_heatmap(plot_func()$r,plot_func()$p))
+      # 使用 plist 返回格式
+      print(viz_cor_heatmap(plot_func()$r, plot_func()$p))
       dev.off()
     }
   )
@@ -442,31 +531,47 @@ server.modules_gcas_corr <- function(input, output, session) {
     height_scatter1 <- reactive ({ input$height_scatter1 })
     output$scatter_plot1 <- renderPlot(width = width_scatter1,
                                        height = height_scatter1,{
-                                         p <- plot_func()
-                                         viz_cor_volcano(p,item = input$gene_select,
+                                         # 使用新的返回格式
+                                         viz_cor_volcano(plot_func(), item = input$gene_select,
                                                          r.cut = input$xinter,
                                                          p.cut = as.numeric(input$yinter),
                                                          colors = unlist(strsplit(input$values, ',')))
                                        })
 
     output$scatter_corr1 <- DT::renderDataTable(server = F, {
-      cor_result <- plot_func()
+      # 获取 plot_func 的结果
+      plot_result <- plot_func()
+      if (is.null(plot_result)) {
+        return(NULL)
+      }
+      
       gene <- input$gene_select
       r.cut = input$xinter
       p.cut = as.numeric(input$yinter)
-      results <- data.frame(r = cor_result$r[gene,],
-                            p = cor_result$p[gene,])
+
+      # 从矩阵格式转换为数据框格式（与 viz_cor_volcano 一致）
+      if (gene %in% rownames(plot_result$r)) {
+        # 只使用 r 和 p 列，然后进行 na.omit
+        cor_result_df <- data.frame(
+          Symbol = colnames(plot_result$r),
+          r = plot_result$r[gene, ],
+          p = plot_result$p[gene, ],
+          p.adj = plot_result$p_adj[gene, ]
+        ) %>% na.omit()
+      } else {
+        return(NULL)
+      }
 
       # Determine change status
-      results$change <- ifelse(results$p < p.cut,
-                               ifelse(results$r < -r.cut, "negative",
-                                      ifelse(results$r > r.cut, "positive", "no")),
-                               "no")
+      cor_result_df$change <- ifelse(cor_result_df$p.adj < p.cut,
+                                     ifelse(cor_result_df$r < -r.cut, "negative",
+                                            ifelse(cor_result_df$r > r.cut, "positive", "no")),
+                                     "no")
       # Arrange results by r
-      results <- dplyr::arrange(results, r)
+      results <- dplyr::arrange(cor_result_df, r)
       DT::datatable(
         results,
-        rownames = T,
+        rownames = F,
         selection =  "single",
         extensions = c("Buttons"),
         options = list(

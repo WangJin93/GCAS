@@ -3,10 +3,10 @@ ui.modules_dash <- function(id) {
   tagList(
     bs4Dash::bs4Jumbotron(
       title = "Welcome to the GEO Cancer Analysis Suite (GCAS)!",
-      lead = HTML("The GEO Cancer Analysis Suite (GCAS) is a versatile R package designed for analyzing and visualizing gene expression data in cancer research. GCAS allows for the comparison of gene expression between normal and tumor samples, correlation analysis, immune infiltration analysis, differential expression analysis, co-expression analysis, and enrichment analysis. It includes a Shiny app for interactive visualization and can also be used directly within the R environment for advanced scripting. GCAS is ideal for researchers, clinicians, and bioinformaticians seeking to explore cancer genomics data efficiently and effectively.</br><b>Citation: </b>**"),
+      lead = HTML("The GEO Cancer Analysis Suite (GCAS) is a versatile R package designed for analyzing and visualizing gene expression data in cancer research. GCAS allows for the comparison of gene expression between normal and tumor samples, correlation analysis, immune infiltration analysis, differential expression analysis, co-expression analysis, and enrichment analysis. It includes a Shiny app for interactive visualization and can also be used directly within the R environment for advanced scripting. GCAS is ideal for researchers, clinicians, and bioinformaticians seeking to explore cancer genomics data efficiently and effectively.</br><b>Citation: </b>Wang, J.; Wei, M.; Zhang, J.; Song, X.; Hu, Y.; Qin, L.; Liang, T.; Zhu, X.; Li, J. GCAS: An Integrated R Package and Shiny App for Comprehensive Cancer Data Analysis. Biomolecules 2026, 16, 823."),
       status = "info",
-      btnName = "Documentation",
-      href = "https://wangjin93.github.io/gcas.html"
+      btnName = "Github source code",
+      href = "https://github.com/WangJin93/GCAS"
     ),
     fluidRow(
       bs4Dash::column(6,
