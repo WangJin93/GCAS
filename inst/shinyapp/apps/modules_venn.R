@@ -97,6 +97,20 @@ ui.modules_venn <- function(id) {
 
 server.modules_venn <- function(input, output, session) {
   ns <- session$ns
+
+  # 按需加载VennDiagram包
+  if (!requireNamespace("VennDiagram", quietly = TRUE)) {
+    showModal(modalDialog(
+      title = "Package Required",
+      "The 'VennDiagram' package is required for Venn diagram analysis. Please install it using: ",
+      code("install.packages('VennDiagram')"),
+      easyClose = TRUE,
+      footer = NULL
+    ))
+    return()
+  }
+  library(VennDiagram)
+
   Venn_data <- reactive({
     inFiles <- input$datafile3
     if (length(inFiles)<2) {
@@ -171,7 +185,7 @@ server.modules_venn <- function(input, output, session) {
     }
 
   })
-  output$venn_list <- renderDataTable({
+  output$venn_list <- DT::renderDataTable(server = FALSE, {
     if (is.null(Venn_data())) {
       NULL
     } else{
@@ -256,7 +270,7 @@ server.modules_venn <- function(input, output, session) {
 
     })
 
-  output$venn_list2 <- renderDataTable({
+  output$venn_list2 <- DT::renderDataTable(server = FALSE, {
     if (is.null(Venn_data())) {
       NULL
     } else{

@@ -8,11 +8,10 @@
 #
 
 library(GCAS)
-# 安装并加载CRAN包
+# 安装并加载核心CRAN包
 if (!require("shiny")) install.packages("shiny", update = FALSE, ask = FALSE); library(shiny)
 if (!require("waiter")) install.packages("waiter", update = FALSE, ask = FALSE); library(waiter)
 if (!require("ggplot2")) install.packages("ggplot2", update = FALSE, ask = FALSE); library(ggplot2)
-if (!require("VennDiagram")) install.packages("VennDiagram", update = FALSE, ask = FALSE); library(VennDiagram)
 if (!require("ggpubr")) install.packages("ggpubr", update = FALSE, ask = FALSE); library(ggpubr)
 if (!require("dplyr")) install.packages("dplyr", update = FALSE, ask = FALSE); library(dplyr)
 if (!require("DT")) install.packages("DT", update = FALSE, ask = FALSE); library(DT)
@@ -26,19 +25,12 @@ if (!require("bs4Dash")) install.packages("bs4Dash", update = FALSE, ask = FALSE
 if (!require("ggrepel")) install.packages("ggrepel", update = FALSE, ask = FALSE); library(ggrepel)
 if (!require("tibble")) install.packages("tibble", update = FALSE, ask = FALSE); library(tibble)
 if (!require("tidyr")) install.packages("tidyr", update = FALSE, ask = FALSE); library(tidyr)
-if (!require("limma")) install.packages("limma", update = FALSE, ask = FALSE); library(limma)
-if (!require("VennDiagram")) install.packages("VennDiagram",update = F,ask = F); library(VennDiagram)
-if (!require("RobustRankAggreg")) install.packages("RobustRankAggreg",update = F,ask = F); library(RobustRankAggreg)
-if (!require("shinyTree")) devtools::install_github("shinyTree/shinyTree"); library(shinyTree)
-if (!require("htmlwidgets")) install.packages("htmlwidgets",update = F,ask = F); library(htmlwidgets)
+if (!require("shinyTree")) install.packages("shinyTree", update = FALSE, ask = FALSE); library(shinyTree)
+if (!require("htmlwidgets")) install.packages("htmlwidgets", update = FALSE, ask = FALSE); library(htmlwidgets)
 
-# 安装并加载Bioconductor包
-if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager", update = FALSE, ask = FALSE)
-
-if (!require("aplot")) BiocManager::install("aplot", update = FALSE, ask = FALSE); library(aplot)
-if (!require("ggtree")) BiocManager::install("ggtree", update = FALSE, ask = FALSE); library(ggtree)
-if (!require("enrichplot")) BiocManager::install("enrichplot", update = FALSE, ask = FALSE); library(enrichplot)
-if (!require("clusterProfiler")) BiocManager::install("clusterProfiler", update = FALSE, ask = FALSE); library(clusterProfiler)
+# 注意：以下可选包改为按需加载（避免启动时加载，提升速度）：
+# - VennDiagram, limma, RobustRankAggreg: 在对应模块中加载
+# - aplot, ggtree, enrichplot, clusterProfiler: 在对应模块中加载
 
 source("apps/visualize.R")
 source("apps/Dashboard.R")
@@ -71,10 +63,22 @@ ui <- tagList(
     color = "rgba(255, 255, 255, 0.98)"
   ),
   tags$head(
+    # 添加Font Awesome图标库
+    tags$link(rel = "stylesheet", href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"),
     tags$style("
       @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
+      }
+
+      /* 使用系统字体，但排除图标元素 */
+      body, p, h1, h2, h3, h4, h5, h6, span, div, td, th, li, a, button, input, select, textarea {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', Arial, sans-serif !important;
+      }
+
+      /* 确保图标显示正确 */
+      .fa, .fas, .far, .fal, .fab, .fa-solid, .fa-regular, .fa-light, .fa-brands {
+        font-family: 'Font Awesome 6 Free', 'Font Awesome 6 Pro', 'FontAwesome' !important;
       }
     ")
   ),
@@ -154,9 +158,9 @@ server <- function(input, output, session) {
     loading_message = ""
   )
   
-  # 初始化完成后延迟15秒隐藏加载屏幕
+  # 初始化完成后延迟3秒隐藏加载屏幕
   session$onFlushed(function() {
-    Sys.sleep(15)
+    Sys.sleep(1)
     waiter::waiter_hide()
   })
   

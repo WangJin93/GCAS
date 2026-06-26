@@ -34,7 +34,18 @@ ui.modules_combat <- function(id) {
                                 shinycssloaders::withSpinner(DT::DTOutput(outputId = ns("tbl"))),
                                 downloadBttn(ns("downloadData"), "Download combat dataset",
                                              style = "gradient",
-                                             color = "default")
+                                             color = "default"),
+                                br(),
+                                tags$hr(),
+                                h5("Analyze integrated data:"),
+                                shinyWidgets::actionBttn(
+                                  inputId = ns("go_to_analysis"),
+                                  label = "Go to Datasets overview",
+                                  style = "gradient",
+                                  icon = icon("arrow-right"),
+                                  color = "primary",
+                                  block = TRUE
+                                )
                        ),
                        tabPanel("DEG results",value = "DEG",
                                 fluidRow(
@@ -116,8 +127,21 @@ ui.modules_combat <- function(id) {
   )
 }
 
-server.modules_combat <- function(input, output, session) {
+server.modules_combat <- function(input, output, session, shared_values) {
   ns <- session$ns
+
+  # 按需加载sva包
+  if (!requireNamespace("sva", quietly = TRUE)) {
+    showModal(modalDialog(
+      title = "Package Required",
+      "The 'sva' package is required for ComBat analysis. Please install it using: ",
+      code("BiocManager::install('sva')"),
+      easyClose = TRUE,
+      footer = NULL
+    ))
+    return()
+  }
+  library(sva)
 
   output$subtype <- renderTree({
     if (input$Type != "Pancancer"){
@@ -153,15 +177,34 @@ server.modules_combat <- function(input, output, session) {
     }
     df <- combat_datasets(tables = input$datasets_text,
                           tumor_subtype = subtype_selected())
+
+    # 将整合数据存储到 shared_values
+    if (!is.null(df)) {
+      shared_values$combat_data <- df$combined_data
+      shared_values$combat_sample_info <- df$sample_info
+      shared_values$combat_datasets <- input$datasets_text
+      shared_values$subtypes_combat <- subtype_selected()
+    }
+
     return(df)
   })
-  output$tbl <- DT::renderDataTable(server = T, {
+  output$tbl <- DT::renderDataTable(server = FALSE, {
     if (!is.null(combat_results())){
       DT::datatable(
         combat_results()$combined_data,
         rownames = T,
+        extensions = c("Buttons"),
         options = list(
-          pageLength = 10
+          pageLength = 10,
+          dom = "Bfrtip",
+          buttons = list(
+            list(
+              extend = "csv", text = "Download table", filename =  "combat_dataset",
+              exportOptions = list(
+                modifier = list(page = "all")
+              )
+            )
+          )
         )
       )
 
@@ -175,6 +218,14 @@ server.modules_combat <- function(input, output, session) {
       write.csv(combat_results()$combined_data, file, row.names = FALSE)
     }
   )
+
+  # 跳转到 Datasets overview 页面
+  observeEvent(input$go_to_analysis, {
+    # 设置一个标志，表示刚完成整合分析，需要自动选择 Integrated data
+    shared_values$just_completed_combat <- TRUE
+    shinyjs::runjs("$('.nav-sidebar li a[data-value=\"dataset\"]').click()")
+  })
+
   DEG_results <- eventReactive(input$DEG_analyze, {
     # 构建对比矩阵
     if (!is.null(combat_results())){
@@ -183,7 +234,7 @@ server.modules_combat <- function(input, output, session) {
       design <- model.matrix(~ 0 + sample_info$type)
       colnames(design) <- levels(factor(sample_info$type))
       rownames(design) <- rownames(sample_info)
-      fomula <- "Normal-Tumor"
+      fomula <- "Tumor-Normal"
       contrast.matrix<-makeContrasts(contrasts= fomula,
                                      levels = design)
       fit <- lmFit(combined_data,design)
@@ -195,14 +246,23 @@ server.modules_combat <- function(input, output, session) {
     }
   })
 
-  output$DEG_result <- DT::renderDataTable(server = T, {
+  output$DEG_result <- DT::renderDataTable(server = FALSE, {
     if (!is.null(DEG_results())){
       DT::datatable(
         DEG_results(),
         rownames = F,
+        extensions = c("Buttons"),
         options = list(
           pageLength = 10,
-          dom = "Bfrtip"
+          dom = "Bfrtip",
+          buttons = list(
+            list(
+              extend = "csv", text = "Download table", filename =  "combat_DEG_results",
+              exportOptions = list(
+                modifier = list(page = "all")
+              )
+            )
+          )
         )
       )
 

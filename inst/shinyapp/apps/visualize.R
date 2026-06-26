@@ -1,4 +1,13 @@
-load("www/genelist.rda")
+# 延迟加载genelist数据，避免启动时加载
+genelist_cache <- NULL
+get_genelist <- function() {
+  if (is.null(genelist_cache)) {
+    load("www/genelist.rda")
+    genelist_cache <- genelist
+  }
+  return(genelist_cache)
+}
+
 themes_list <- list(
   "Base" = ggthemes::theme_few(),
   "cowplot" = cowplot::theme_cowplot(),

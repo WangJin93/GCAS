@@ -113,6 +113,23 @@ fluidRow(column(3,
 
 server.modules_GSEA <- function(input, output, session) {
   ns <- session$ns
+
+  # 按需加载Bioconductor包
+  if (!requireNamespace("clusterProfiler", quietly = TRUE)) {
+    showModal(modalDialog(
+      title = "Package Required",
+      "The 'clusterProfiler' package is required for GSEA analysis. Please install it using: ",
+      code("BiocManager::install('clusterProfiler')"),
+      easyClose = TRUE,
+      footer = NULL
+    ))
+    return()
+  }
+  library(clusterProfiler)
+  library(enrichplot)
+  library(ggtree)
+  library(aplot)
+
   data_input <- eventReactive(input$search_bttn, {
     inFile <- input$datafile
     if (is.null(inFile)){

@@ -82,6 +82,20 @@ ui.modules_RRA <- function(id) {
 
 server.modules_RRA <- function(input, output, session) {
   ns <- session$ns
+
+  # 按需加载RobustRankAggreg包
+  if (!requireNamespace("RobustRankAggreg", quietly = TRUE)) {
+    showModal(modalDialog(
+      title = "Package Required",
+      "The 'RobustRankAggreg' package is required for RRA analysis. Please install it using: ",
+      code("install.packages('RobustRankAggreg')"),
+      easyClose = TRUE,
+      footer = NULL
+    ))
+    return()
+  }
+  library(RobustRankAggreg)
+
   RRA_data <- reactive({
     inFiles <- input$datafile3
     if (length(inFiles)<2) {
@@ -136,7 +150,7 @@ server.modules_RRA <- function(input, output, session) {
     }
 
   })
-  output$plotdata <- renderDataTable({
+  output$plotdata <- DT::renderDataTable(server = FALSE, {
     if (is.null(RRA_data())) {
       NULL
     } else{

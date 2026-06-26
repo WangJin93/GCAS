@@ -85,7 +85,7 @@ server.modules_dataset_info <- function(input, output, session, shared_values) {
     updateSelectizeInput(
       session,
       "ga_id",
-      choices = genelist,
+      choices = get_genelist(),
       selected = "GAPDH",
       server = TRUE
     )
@@ -121,8 +121,12 @@ server.modules_dataset_info <- function(input, output, session, shared_values) {
   })
 
   output$ga_stage_data <- DT::renderDataTable(server = FALSE, {
+    req(input$ga_stage_submit > 0)
+    data <- clinic_merge()
+    req(!is.null(data), nrow(data) > 0)
+    
     DT::datatable(
-      clinic_merge(),
+      data,
       rownames = FALSE,
       extensions = c("Buttons"),
       options = list(

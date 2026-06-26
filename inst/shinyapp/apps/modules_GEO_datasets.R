@@ -83,6 +83,8 @@ server.modules_GEO_datasets <- function(input, output, session, shared_values) {
   })
 
   output$subtype <- renderTree({
+    # 只在用户选择"Select from tree"时才加载subtype数据
+    req(input$cancer_type_select == "Select from tree")
     subtype
   })
   # observeEvent(input$subtype,{
@@ -92,6 +94,9 @@ server.modules_GEO_datasets <- function(input, output, session, shared_values) {
   #   print(extract_subset(subtype,nn))
   # })
   selected_types <- reactive({
+    # 只在用户选择"Select from tree"且有树选择时才执行
+    req(input$cancer_type_select == "Select from tree")
+
     # 如果选择了 Integrated data，返回 NULL，因为我们会在 output$datasets_text 中单独处理
     if (input$cancer_type_select == "Integrated data") {
       # 设置 subtypes 为整合数据的 subtypes
@@ -102,7 +107,7 @@ server.modules_GEO_datasets <- function(input, output, session, shared_values) {
       }
       return(NULL)
     }
-    
+
     tree <- input$subtype
     req(tree)
     nn<- sapply(get_selected(tree, format = "classid"), function(x) x[1])

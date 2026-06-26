@@ -21,8 +21,8 @@ fluidRow(column(3,
         materialSwitch(ns("Show.P.label"), "Show P label", inline = TRUE),
         materialSwitch(ns("Show.n"), "Show sample size", inline = T),
         materialSwitch(ns("x_axis45"), "X-axis 45°", inline = T),
-        colourpicker::colourInput(inputId = ns("normal_col"), "Normal sample color", "#00AFBB"),
-        colourpicker::colourInput(inputId = ns("tumor_col"), "Tumor sample color", "#FC4E07"),
+        colourpicker::colourInput(inputId = ns("tumor_col"), "Normal sample color", "#00AFBB"),
+        colourpicker::colourInput(inputId = ns("normal_col"), "Tumor sample color", "#FC4E07"),
         tags$hr(style = "border:none; border-top:2px solid #5E81AC;"),
         shinyWidgets::actionBttn(
           inputId = ns("search_bttn"),
@@ -66,21 +66,36 @@ server.modules_multi_gene <- function(input, output, session, shared_values) {
   ns <- session$ns
 
   output$type_selected  <- renderText({
-    shared_values$subtypes
+    if (!is.null(input$datasets_text) && input$datasets_text == "Integrated data (ComBat)") {
+      "integrated data"
+    } else {
+      shared_values$subtypes
+    }
   })
 
   output$datasets_text <- renderUI({
+    # 检查是否有整合数据
+    has_combat <- !is.null(shared_values$combat_data)
+
+    # 构建数据集选项
+    dataset_choices <- shared_values$datasets_text
+
+    # 如果有整合数据，添加到选项中
+    if (has_combat) {
+      dataset_choices <- c("Integrated data (ComBat)" = "Integrated data (ComBat)", dataset_choices)
+    }
+
     selectInput(
       inputId = ns("datasets_text"),
       label = "Select dataset:",
-      choices = shared_values$datasets_text,
+      choices = dataset_choices,
       selected = shared_values$datasets_select,
       multiple = FALSE
     )
   })
 
   colors <- reactive({
-    c( input$normal_col,input$tumor_col)
+    c(input$tumor_col, input$normal_col)
   })
 
 
@@ -92,14 +107,88 @@ server.modules_multi_gene <- function(input, output, session, shared_values) {
 
   plot_func <- eventReactive(input$search_bttn, {
     if (length(ga_ids()) >= 1) {
-      df <- get_expr_data(datasets = input$datasets_text,genes = ga_ids())
-      nn<- shared_values$subtypes
-      p <- viz_TvsN(df,df_type = "multi_gene",tumor_subtype = nn,
-                     Method =  input$method,
-                     Show.P.value = input$Show.P.value,
-                     Show.P.label = input$Show.P.label,
-                     Show.n = input$Show.n,
-                     values = colors())
+      datasets_text <- input$datasets_text
+
+      # 根据选中的数据集来判断是否使用整合数据
+      if (datasets_text == "Integrated data (ComBat)") {
+        # 使用 ComBat 整合数据
+        if (is.null(shared_values$combat_data)) {
+          sendSweetAlert(
+            session,
+            title = "Error",
+            text = "No integrated data available. Please run ComBat analysis first in 'Integrative analysis' tab.",
+            type = "error"
+          )
+          return(NULL)
+        }
+
+        combat_data <- shared_values$combat_data
+        sample_info <- shared_values$combat_sample_info
+
+        # 恢复 sample_info 中的 ID 列
+        sample_info <- tibble::rownames_to_column(sample_info, "ID")
+
+        # 检查基因是否存在于数据中
+        all_genes <- ga_ids()
+        missing_genes <- all_genes[!all_genes %in% rownames(combat_data)]
+        if (length(missing_genes) > 0) {
+          sendSweetAlert(
+            session,
+            title = "Error",
+            text = paste("Gene(s)", paste(missing_genes, collapse = ", "), "not found in the integrated data."),
+            type = "error"
+          )
+          return(NULL)
+        }
+
+        # 准备与 get_expr_data 返回格式一致的数据
+        expr_data <- combat_data[all_genes, , drop = FALSE]
+        expr_data <- t(expr_data)
+        expr_data <- as.data.frame(expr_data)
+        expr_data$ID <- rownames(expr_data)
+        expr_data$dataset <- "Integrated data (ComBat)"
+
+        # 合并样本信息（删除expr_data中的dataset列，使用sample_info中的）
+        if ("dataset" %in% colnames(sample_info)) {
+          sample_info <- sample_info[, !colnames(sample_info) %in% c("dataset")]
+        }
+        expr_data <- merge(expr_data, sample_info, by = "ID", all.x = TRUE)
+
+        # 确保 subtype 字段有值
+        if (!"subtype" %in% colnames(expr_data)) {
+          expr_data$subtype <- shared_values$subtypes_combat[1]
+        }
+
+        # 使用 viz_TvsN 函数
+        nn <- shared_values$subtypes_combat
+        if (is.null(nn)) {
+          nn <- shared_values$subtypes
+        }
+        nn <- extract_subset(subtype, nn)
+
+        p <- viz_TvsN(expr_data,df_type = "multi_gene",tumor_subtype = nn,
+                       Method =  input$method,
+                       Show.P.value = input$Show.P.value,
+                       Show.P.label = input$Show.P.label,
+                       Show.n = input$Show.n,
+                       values = colors())
+      } else {
+        # 使用原始单数据集
+        df <- get_expr_data(datasets = datasets_text,genes = ga_ids())
+        # 从树节点名称提取实际的subtypes
+        nn <- shared_values$subtypes
+        if (!is.null(nn) && length(nn) > 0) {
+          # 如果是树节点名称（如"Lung cancer"），提取对应的subtypes
+          nn <- extract_subset(subtype, nn)
+        }
+        p <- viz_TvsN(df,df_type = "multi_gene",tumor_subtype = nn,
+                       Method =  input$method,
+                       Show.P.value = input$Show.P.value,
+                       Show.P.label = input$Show.P.label,
+                       Show.n = input$Show.n,
+                       values = colors())
+      }
+
       if (input$x_axis45){
         p <- p+ggplot2::theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
       }

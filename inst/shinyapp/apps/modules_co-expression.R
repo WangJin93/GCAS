@@ -142,7 +142,7 @@ server.modules_co_expression <- function(input, output, session) {
     updateSelectizeInput(
       session,
       "Pancan_search",
-      choices = genelist,
+      choices = get_genelist(),
       selected = "GAPDH",
       server = TRUE
     )

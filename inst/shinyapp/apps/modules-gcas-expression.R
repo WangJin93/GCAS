@@ -45,8 +45,8 @@ fluidRow(column(3,
         materialSwitch(ns("pdist_show_p_label"), "Show P label", inline = TRUE),
         materialSwitch(ns("show_n"), "Show sample size", inline = FALSE),
         numericInput(inputId = ns("show_n_position"), label = "Show n position", value = -3),
-        colourpicker::colourInput(inputId = ns("normal_col"), "Normal sample color", "#00AFBB"),
-        colourpicker::colourInput(inputId = ns("tumor_col"), "Tumor sample color", "#FC4E07"),
+        colourpicker::colourInput(inputId = ns("tumor_col"), "Normal sample color", "#00AFBB"),
+        colourpicker::colourInput(inputId = ns("normal_col"), "Tumor sample color", "#FC4E07"),
         tags$hr(style = "border:none; border-top:2px solid #5E81AC;"),
         shinyWidgets::actionBttn(
           inputId = ns("search_bttn"),
@@ -185,16 +185,16 @@ server.modules_multidata_dist <- function(input, output, session) {
     updateSelectizeInput(
       session,
       "Pancan_search",
-      choices = genelist,
+      choices = get_genelist(),
       selected = "GAPDH",
       server = TRUE
     )
   })
 
   colors <- reactive({
-    c( input$normal_col,input$tumor_col)
+    c(input$tumor_col, input$normal_col)
   })
-  
+
 
   # Show waiter for plot
   w <- waiter::Waiter$new(id = ns("gene_pancan_dist"), html = waiter::spin_hexdots(), color = "black")
@@ -320,15 +320,5 @@ server.modules_multidata_dist <- function(input, output, session) {
                                        plot_meta_forest(data_sum())
                                      }
                                    })
-  output$download_forest <- downloadHandler(
-    filename = function() {
-      paste0(input$Pancan_search,"_",input$Type,".pdf")
-    },
-    content = function(file) {
-      pdf(file,  width =  input$width_scatter/70 ,height = input$height_scatter/70)
-      plot_meta_forest(data_sum())
-      dev.off()
-    }
-  )
-  
+
 }

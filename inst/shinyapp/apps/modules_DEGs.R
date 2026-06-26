@@ -120,12 +120,26 @@ fluidRow(column(3,
 
 server.modules_DEG <- function(input, output, session) {
   ns <- session$ns
+
+  # 按需加载limma包
+  if (!requireNamespace("limma", quietly = TRUE)) {
+    showModal(modalDialog(
+      title = "Package Required",
+      "The 'limma' package is required for DEG analysis. Please install it using: ",
+      code("BiocManager::install('limma')"),
+      easyClose = TRUE,
+      footer = NULL
+    ))
+    return()
+  }
+  library(limma)
+
   observe({
 
     updateSelectizeInput(
       session,
       "show.lable",
-      choices = genelist,
+      choices = get_genelist(),
       selected = "GAPDH",
       server = TRUE
     )
