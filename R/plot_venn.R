@@ -1,7 +1,6 @@
 #' @title Plot Venn Diagram for Differentially Expressed Genes
 #' @description
 #' This function plots a Venn diagram for lists of differentially expressed genes (DEGs) across multiple datasets.
-#' @import VennDiagram
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom grid grid.newpage grid.draw
 #' @param results List of character vectors. Each vector contains DEGs for a specific dataset.
@@ -23,6 +22,9 @@
 #' }
 #' @export
 plot_venn <- function(results, fill_colors = NULL, palette = "Set1", lty = 2, ...) {
+  if (!requireNamespace("VennDiagram", quietly = TRUE)) {
+    stop("The 'VennDiagram' package is required for this function. Please install it with: install.packages('VennDiagram')")
+  }
 
   # 确定数据集的数量
   intersects <- Reduce(intersect, results)

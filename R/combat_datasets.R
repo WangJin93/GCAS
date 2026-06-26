@@ -3,7 +3,6 @@
 #' @param tables A character vector of table names to be processed.
 #' @param tumor_subtype A character string specifying the tumor subtype to filter the datasets. If NULL, all subtypes are included.
 #' @return A list containing the combined and batch-corrected data matrix and the sample information.
-#' @import sva
 #' @import dplyr
 #' @import tibble
 #' @export
@@ -15,6 +14,9 @@
 #'   sample_info <- result$sample_info
 #' }
 combat_datasets <- function(tables, tumor_subtype = NULL) {
+  if (!requireNamespace("sva", quietly = TRUE)) {
+    stop("The 'sva' package is required for this function. Please install it with: BiocManager::install('sva')")
+  }
 
   # Initialize a list to store individual datasets
   data_list <- list()
@@ -83,7 +85,7 @@ combat_datasets <- function(tables, tumor_subtype = NULL) {
   # Extract the batch variable (assuming dataset names are used as batches)
   mod <- model.matrix(~ as.factor(type), data = sample_info)
 
-  final_data <- ComBat(dat = combined_data,
+  final_data <- sva::ComBat(dat = combined_data,
                        batch = sample_info$dataset,
                        mod = mod,
                        par.prior = TRUE)

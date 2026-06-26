@@ -128,6 +128,14 @@
     }
   }
   
+  # Check for datasets with insufficient samples
+  insufficient_datasets <- groups[apply(rvalue, 1, function(row) all(is.na(row)))]
+  if (length(insufficient_datasets) > 0) {
+    warning(paste("The following datasets have insufficient samples (<", min_samples, 
+                  ") and will be excluded from correlation analysis:", 
+                  paste(insufficient_datasets, collapse = ", ")))
+  }
+  
   # Transpose all matrices, and omit any NA values
   rvalue_T <- t(na.omit(rvalue))
   pvalue_T <- t(na.omit(pvalue))

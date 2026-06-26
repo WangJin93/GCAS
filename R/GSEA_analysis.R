@@ -6,7 +6,6 @@
 #' @param data_type Character, type of the input data. Either "correlation" for correlation analysis results or "limma" for limma differential analysis results.
 #' @return A GSEA analysis result object.
 #' @importFrom dplyr arrange distinct select
-#' @importFrom clusterProfiler GSEA
 #' @examples
 #' \dontrun{
 #' df <- get_OSF_data(table = "GSE74706", action = "geo_data")
@@ -18,6 +17,9 @@
 #' }
 #' @export
 GSEA_analysis <- function(data, gmt_file, pvalue_cutoff = 0.05, data_type = "correlation") {
+  if (!requireNamespace("clusterProfiler", quietly = TRUE)) {
+    stop("The 'clusterProfiler' package is required for this function. Please install it with: BiocManager::install('clusterProfiler')")
+  }
   
   # Input validation
   if (is.null(data)) {
@@ -82,7 +84,7 @@ GSEA_analysis <- function(data, gmt_file, pvalue_cutoff = 0.05, data_type = "cor
   }
 
   # Run GSEA analysis
-  gsea_result <- GSEA(
+  gsea_result <- clusterProfiler::GSEA(
     geneList = geneList,
     TERM2GENE = gmt_file,  # Gene set file, can be GMT file or GO/KEGG/Reactome datasets
     pvalueCutoff = pvalue_cutoff,

@@ -3,7 +3,6 @@
 #' This function performs RRA analysis on differentially expressed genes (DEGs) lists
 #' obtained from various studies. It ranks genes based on their differential expression
 #' and aggregates the ranks to identify consistently regulated genes across studies.
-#' @import RobustRankAggreg
 #' @param DEGs_lists A list of DEGs data frames. Each data frame should contain at least a 'gene' column and a 'logFC' column.
 #' @param top.num Numeric, the number of top genes to select based on their ranks. Default is 0, which selects all genes passing the thresholds.
 #' @param rra.p Numeric, the p-value threshold for RRA. Default is 0.05.
@@ -22,6 +21,9 @@
 #' }
 #' @export
 RRA_analysis <- function(DEGs_lists, top.num = 0, rra.p = 0.05, logFC_cut = 1, p_cut = 0.05) {
+  if (!requireNamespace("RobustRankAggreg", quietly = TRUE)) {
+    stop("The 'RobustRankAggreg' package is required for this function. Please install it with: install.packages('RobustRankAggreg')")
+  }
   
   # Input validation
   if (is.null(DEGs_lists)) {
@@ -68,8 +70,8 @@ RRA_analysis <- function(DEGs_lists, top.num = 0, rra.p = 0.05, logFC_cut = 1, p
   results <- get_DEGs_list(DEGs_lists, logFC_cut = logFC_cut, p_cut = p_cut)
 
   # Aggregate ranks for up- and down-regulated genes
-  ups <- aggregateRanks(results$DEG_up)
-  downs <- aggregateRanks(results$DEG_down)
+  ups <- RobustRankAggreg::aggregateRanks(results$DEG_up)
+  downs <- RobustRankAggreg::aggregateRanks(results$DEG_down)
 
   # Calculate frequency of each gene in the DEGs lists
   calculate_freq <- function(glist, ranked_data) {

@@ -1,14 +1,7 @@
-#' @title Meta analysis in multiple datasets
-#' @description
-#' Plotting volcano plot for DEGs between tumor and normal samples in CPTAC datasets.
-#' @import dplyr meta
-#' @param cohort Data cohort, for example, "LUAD_APOLLO", "LUAD_CPTAC".
-#' @param data_input Expression data obtained from get_expr_data() function.
 #' @title Meta-analysis in Multiple Datasets
 #' @description
 #' This function performs a meta-analysis on multiple datasets and generates a forest plot.
 #' It also tests for publication bias.
-#' @import meta
 #' @param results Data frame. The results data frame containing columns for dataset, n_Tumor, mean_Tumor, sd_Tumor, n_Normal, mean_Normal, and sd_Normal.
 #' @param method Character. The statistical method to use (default is "wilcox").
 #' @param k.min Integer. Minimum number of studies for bias test (default is 7).
@@ -21,6 +14,9 @@
 #' }
 #' @export
 plot_meta_forest <- function(results, method = "wilcox", k.min = 10) {
+  if (!requireNamespace("meta", quietly = TRUE)) {
+    stop("The 'meta' package is required for this function. Please install it with: install.packages('meta')")
+  }
   # Remove rows with NA values
   results <- na.omit(results)
 

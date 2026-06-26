@@ -1,6 +1,6 @@
 #' @title Differential Expression Gene (DEG) Analysis
 #' @description Perform differential expression gene analysis on a given dataset with comprehensive statistical metrics.
-#' @import dplyr limma
+#' @import dplyr
 #' @param df A dataframe containing gene expression data with sample IDs as columns.
 #' @param tumor_subtype A character vector specifying the tumor subtypes to be analyzed. Default is NULL, which means all tumor subtypes will be included.
 #' @param adjust_method The method for adjusting p-values for multiple testing. Options include "none", "BH" (Benjamini-Hochberg), "BY" (Benjamini-Yekutieli), "holm", "hochberg", "hommel", "bonferroni". Default is "BH".
@@ -14,6 +14,9 @@
 #' }
 #' @export
 DEGs_analysis <- function(df, tumor_subtype = NULL, adjust_method = "BH", confint = TRUE, ...) {
+  if (!requireNamespace("limma", quietly = TRUE)) {
+    stop("The 'limma' package is required for this function. Please install it with: BiocManager::install('limma')")
+  }
   # 检查 sample_subtype 是否存在且是数据框
   if (!exists("sample_subtype")) {
     stop("sample_subtype data not found. Please load it with: data('sample_subtype')")
@@ -88,20 +91,20 @@ DEGs_analysis <- function(df, tumor_subtype = NULL, adjust_method = "BH", confin
   colnames(design) <- levels(factor(group))
 
   # Create contrast matrix for Tumor vs Normal comparison
-  contrast.matrix <- makeContrasts(contrasts = "Tumor - Normal", levels = design)
+  contrast.matrix <- limma::makeContrasts(contrasts = "Tumor - Normal", levels = design)
 
   # Fit linear model
-  fit <- lmFit(df, design, ...)
+  fit <- limma::lmFit(df, design, ...)
 
   # Apply contrasts and compute eBayes statistics
-  fit2 <- contrasts.fit(fit, contrast.matrix)
-  fit2 <- eBayes(fit2, ...)
+  fit2 <- limma::contrasts.fit(fit, contrast.matrix)
+  fit2 <- limma::eBayes(fit2, ...)
 
   # Extract top differentially expressed genes with confidence intervals
   if (confint) {
-    DEG <- topTable(fit2, coef = 1, n = Inf, adjust = adjust_method, confint = 0.95, ...) %>% na.omit()
+    DEG <- limma::topTable(fit2, coef = 1, n = Inf, adjust = adjust_method, confint = 0.95, ...) %>% na.omit()
   } else {
-    DEG <- topTable(fit2, coef = 1, n = Inf, adjust = adjust_method, ...) %>% na.omit()
+    DEG <- limma::topTable(fit2, coef = 1, n = Inf, adjust = adjust_method, ...) %>% na.omit()
   }
 
   # Add effect size metrics (Cohen's d-like measure based on logFC and standard error)
