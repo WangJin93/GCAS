@@ -5,6 +5,11 @@ It addresses common challenges in cancer research, such as data complexity, disp
 
 GCAS is primarily **GEO‑centered**, but also supports user‑supplied expression matrices and associated clinical information, making it suitable for both public and in‑house datasets.
 
+**Citation**
+
+Wang, J.; Wei, M.; Zhang, J.; Song, X.; Hu, Y.; Qin, L.; Liang, T.; Zhu, X.; Li, J. GCAS: An Integrated R Package and Shiny App for Comprehensive Cancer Data Analysis. Biomolecules 2026, 16, 823. https://doi.org/10.3390/biom16060823
+
+
 ---
 
 ### Data Sources
