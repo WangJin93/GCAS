@@ -291,7 +291,6 @@ server.modules_gcas_corr <- function(input, output, session) {
       }
 
       p <- cor_gcas_genelist(df, gd,
-                             tumor_subtype = nn,
                              sample_type = input$sample_type,
                              cor_method = input$cor_method)
     }
