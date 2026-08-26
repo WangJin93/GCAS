@@ -222,16 +222,21 @@ server.modules_gcas_drug <- function(input, output, session) {
     
     # 使用 plist 返回格式：转换矩阵为长格式数据框
     # plist 包含: r, p, p_adj, n, t, ci_lower, ci_upper, sss
-    # 矩阵结构: 行 = 数据集, 列 = 药物
-    
+    # 矩阵结构: 行 = 药物(rownames), 列 = 数据集(colnames)
+    # R 的 as.numeric(mat) 按列展开(column-major): 药物交替、数据集成块
+    # 变量名与最终列名不一致，由下方 data.frame() + colnames() 重命名决定:
+    #   data.frame 第1列(Drug 变量) -> 重命名为 "Dataset"
+    #   data.frame 第2列(Dataset 变量) -> 重命名为 "Drug"
+    # 因此 Drug 变量装数据集名(成块), Dataset 变量装药物名(交替)
+
     # 获取矩阵维度
-    n_datasets <- nrow(p$r)
-    n_drugs <- ncol(p$r)
+    n_drugs <- nrow(p$r)
+    n_datasets <- ncol(p$r)
     total_rows <- n_datasets * n_drugs
-    
-    # 创建 Dataset 和 Drug 列
-    Dataset <- rep(rownames(p$r), each = n_drugs)
-    Drug <- rep(colnames(p$r), n_datasets)
+
+    # 创建两列（与 as.numeric 按列展开顺序对齐）
+    Dataset <- rep(rownames(p$r), n_datasets)      # 药物名交替 (最终列名 Drug)
+    Drug <- rep(colnames(p$r), each = n_drugs)      # 数据集名成块 (最终列名 Dataset)
     
     # 提取统计量，确保长度一致
     extract_stat <- function(mat) {
