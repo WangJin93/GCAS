@@ -77,9 +77,10 @@ test_that(".determine_sample_type works correctly", {
   result <- .determine_sample_type(test_df)
   expect_equal(result$type, c("Normal", "Tumor", "Normal", "Tumor"))
   
-  # Test with tumor_subtype
+  # Test with tumor_subtype: rows not matching tumor_subtype/Normal/Adjacent
+  # are filtered out, remaining rows are classified Tumor/Normal
   result <- .determine_sample_type(test_df, tumor_subtype = "LC")
-  expect_equal(result$type, c("Normal", NA, "Normal", "Tumor"))
+  expect_equal(result$type, c("Normal", "Normal", "Tumor"))
 })
 
 # Test correlation utility function
@@ -91,6 +92,56 @@ test_that(".calculate_correlation input validation works", {
   # Test missing columns
   test_df <- data.frame(target = rnorm(10), var1 = rnorm(10))
   expect_error(.calculate_correlation(test_df, "missing", c("var1")))
+})
+
+# Regression test: a gene that cannot be measured in one group must not cause
+# the whole group to disappear from the results (previously na.omit() deleted
+# any group row containing an NA, discarding all other gene correlations of
+# that group). Every group should be retained and uncomputable pairs returned
+# as NA.
+test_that(".calculate_correlation keeps all groups and returns NA per pair", {
+  set.seed(123)
+  test_df <- data.frame(
+    ID = paste0("s", 1:21),
+    dataset = rep(c("DS_A", "DS_B", "DS_C"), c(10, 8, 3)),
+    target = rnorm(21),
+    g1 = rnorm(21),
+    g2 = c(rnorm(10), rep(NA_real_, 8), rnorm(3)),   # entirely missing in DS_B
+    g3 = c(rnorm(10), rep(1, 8), rnorm(3))            # constant in DS_B
+  )
+  
+  expect_warning(result <- .calculate_correlation(test_df, "target",
+                                                  c("g1", "g2", "g3")),
+                 "could not be computed")
+  
+  # All groups are kept as columns in every matrix
+  expect_setequal(colnames(result$r), c("DS_A", "DS_B", "DS_C"))
+  # All matrices share identical dimnames
+  for (nm in c("p", "p_adj", "n", "t", "ci_lower", "ci_upper")) {
+    expect_identical(dimnames(result$r), dimnames(result[[nm]]))
+  }
+  # Complete group is fully computed
+  expect_true(all(is.finite(result$r[, "DS_A"])))
+  # In DS_B, g2 (missing) and g3 (constant) are NA while g1 is computed
+  expect_true(is.finite(result$r["g1", "DS_B"]))
+  expect_true(is.na(result$r["g2", "DS_B"]))
+  expect_true(is.na(result$r["g3", "DS_B"]))
+  # DS_C has fewer than min_samples rows: all NA but still retained
+  expect_true(all(is.na(result$r[, "DS_C"])))
+  # No NaN/Inf leaks into any matrix
+  expect_false(any(is.nan(result$r)))
+  expect_false(any(is.nan(result$p)))
+  expect_false(any(is.nan(result$ci_lower)))
+})
+
+# Regression test: confidence-interval helper must not produce NaN for the
+# boundary cases that used to occur (n <= 3, perfect correlation, NA input)
+test_that(".calculate_correlation_ci handles boundary cases", {
+  expect_true(all(is.na(.calculate_correlation_ci(0.5, 3))))
+  expect_true(all(is.na(.calculate_correlation_ci(NA_real_, 10))))
+  expect_equal(.calculate_correlation_ci(1, 10), c(lower = 1, upper = 1))
+  ci <- .calculate_correlation_ci(0.5, 100)
+  expect_true(ci["lower"] < 0.5 && 0.5 < ci["upper"])
 })
 
 # Test API URL functions

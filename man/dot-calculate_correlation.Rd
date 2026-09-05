@@ -26,7 +26,7 @@
 
 \item{cor_method}{The correlation method to use ("pearson", "spearman", or "kendall").}
 
-\item{min_samples}{The minimum number of samples required for correlation calculation (default: 4).}
+\item{min_samples}{The minimum number of complete (non-missing) sample pairs required to compute a correlation for a gene in a group (default: 4). Pairs below this threshold are returned as NA.}
 
 \item{adjust_method}{The method for adjusting p-values for multiple testing. Options include "none", "BH", "BY", "holm", "hochberg", "hommel", "bonferroni". Default is "BH".}
 
@@ -34,8 +34,11 @@
 }
 \value{
 A list containing correlation matrix (r), p-value matrix (p), adjusted p-value matrix (p_adj), 
-        sample size matrix (n), t-statistic matrix (t), confidence interval lower bound matrix (ci_lower), 
+        per-pair sample size matrix (n), t-statistic matrix (t), confidence interval lower bound matrix (ci_lower), 
         confidence interval upper bound matrix (ci_upper), and split data (sss).
+        All matrices keep every group x gene pair (genes in rows, groups in columns, with
+        identical dimnames); pairs that could not be computed are returned as NA rather than
+        removing the whole group from the results.
 }
 \description{
 This is an internal function used by other correlation analysis functions.
